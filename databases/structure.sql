@@ -1,72 +1,105 @@
-BEGIN TRANSACTION;
-CREATE TABLE "Users" (
-	"ID"	INTEGER NOT NULL,
-	"Name"	TEXT NOT NULL,
-	"JoinDate"	INTEGER NOT NULL,
-	"CreatedDate"	INTEGER NOT NULL,
-	"PrimaryRole"	INTEGER NOT NULL,
-	"Left"	TEXT NOT NULL DEFAULT 'F',
-	PRIMARY KEY("ID"),
-	FOREIGN KEY("PrimaryRole") REFERENCES "Roles"("ID") ON UPDATE CASCADE
+CREATE TABLE ChannelCategories (
+    ID   INTEGER NOT NULL,
+    Name TEXT    NOT NULL,
+    PRIMARY KEY (ID)
 );
-CREATE TABLE "Tags" (
-	"TagID"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-	"User"	INTEGER NOT NULL,
-	"Content"	TEXT NOT NULL,
-	"LastUpdated"	INTEGER NOT NULL,
-	FOREIGN KEY("User") REFERENCES "Users"("ID") ON UPDATE CASCADE
+
+CREATE TABLE Channels (
+    ID       INTEGER NOT NULL,
+    Name     TEXT    NOT NULL,
+    Type     TEXT    NOT NULL,
+    Category INTEGER,
+    PRIMARY KEY (ID),
+    FOREIGN KEY (Category) REFERENCES ChannelCategories (ID) ON UPDATE CASCADE
 );
-CREATE TABLE "FM" (
-	"User"	INTEGER NOT NULL,
-	"LastFMUsername"	TEXT NOT NULL,
-	"LastUpdated"	INTEGER NOT NULL,
-	PRIMARY KEY("User"),
-	FOREIGN KEY("User") REFERENCES "Users"("ID") ON UPDATE CASCADE
+
+CREATE TABLE Credits (
+    User    INTEGER NOT NULL,
+    Credits INTEGER NOT NULL
+                    DEFAULT 0,
+    PRIMARY KEY (User),
+    FOREIGN KEY (User) REFERENCES Users (ID) ON UPDATE CASCADE
 );
-CREATE TABLE "OwnedRoles" (
-	"User"	INTEGER NOT NULL,
-	"Role"	INTEGER NOT NULL,
-	"PurchaseDate"	INTEGER NOT NULL,
-	"PurchaseID"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-	FOREIGN KEY("User") REFERENCES "Users"("ID") ON UPDATE CASCADE,
-	FOREIGN KEY("Role") REFERENCES "Roles"("ID") ON UPDATE CASCADE
+
+CREATE TABLE Dailies (
+    User      INTEGER NOT NULL,
+    DailyUses INTEGER NOT NULL
+                      DEFAULT 0,
+    LastDaily INTEGER NOT NULL
+                      DEFAULT 0,
+    FOREIGN KEY (User) REFERENCES Users (ID) ON UPDATE CASCADE,
+    PRIMARY KEY (User)
 );
-CREATE TABLE "Roles" (
-	"Name"	TEXT NOT NULL,
-	"ID"	INTEGER NOT NULL,
-	"Color"	TEXT NOT NULL,
-	"Priority"	INTEGER NOT NULL UNIQUE,
-	PRIMARY KEY("ID")
+
+CREATE TABLE FM (
+    User           INTEGER NOT NULL,
+    LastFMUsername TEXT    NOT NULL,
+    LastUpdated    INTEGER NOT NULL,
+    FOREIGN KEY (User) REFERENCES Users (ID) ON UPDATE CASCADE,
+    PRIMARY KEY (User)
 );
-CREATE TABLE "Levels" (
-	"User"	INTEGER NOT NULL,
-	"Level"	INTEGER NOT NULL DEFAULT 0,
-	"Points"	INTEGER NOT NULL DEFAULT 0,
-	"MonthLevel"	INTEGER NOT NULL DEFAULT 0,
-	"MonthPoints"	INTEGER NOT NULL DEFAULT 0,
-	PRIMARY KEY("User"),
-	FOREIGN KEY("User") REFERENCES "Users"("ID") ON UPDATE CASCADE
+
+CREATE TABLE Levels (
+    User        INTEGER NOT NULL,
+    Level       INTEGER NOT NULL
+                        DEFAULT 0,
+    Points      INTEGER NOT NULL
+                        DEFAULT 0,
+    MonthLevel  INTEGER NOT NULL
+                        DEFAULT 0,
+    MonthPoints INTEGER NOT NULL
+                        DEFAULT 0,
+    PRIMARY KEY (User),
+    FOREIGN KEY (User) REFERENCES Users (ID) ON UPDATE CASCADE
 );
-CREATE TABLE "Dailies" (
-	"User"	INTEGER NOT NULL,
-	"DailyUses"	INTEGER NOT NULL DEFAULT 0,
-	"LastDaily"	INTEGER NOT NULL DEFAULT 0,
-	FOREIGN KEY("User") REFERENCES "Users"("ID") ON UPDATE CASCADE,
-	PRIMARY KEY("User")
+
+CREATE TABLE OwnedRoles (
+    User         INTEGER NOT NULL,
+    Role         INTEGER NOT NULL,
+    PurchaseDate INTEGER NOT NULL,
+    PurchaseID   INTEGER NOT NULL,
+    PRIMARY KEY (PurchaseID),
+    FOREIGN KEY (User) REFERENCES Users (ID) ON UPDATE CASCADE,
+    FOREIGN KEY (Role) REFERENCES Roles (ID) ON UPDATE CASCADE
 );
-CREATE TABLE "Credits" (
-	"User"	INTEGER NOT NULL,
-	"Credits"	INTEGER NOT NULL DEFAULT 0,
-	PRIMARY KEY("User"),
-	FOREIGN KEY("User") REFERENCES "Users"("ID") ON UPDATE CASCADE
+
+CREATE TABLE Roles (
+    Name     TEXT    NOT NULL,
+    ID       INTEGER NOT NULL,
+    Color    TEXT    NOT NULL,
+    Priority INTEGER NOT NULL
+                     UNIQUE,
+    PRIMARY KEY (ID)
 );
-CREATE TABLE "Warnings" (
-	"User"	INTEGER NOT NULL,
-	"Reason"	TEXT NOT NULL,
-	"Date"	INTEGER NOT NULL,
-	"WarnedBy"	INTEGER NOT NULL,
-	"WarnID"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-	FOREIGN KEY("User") REFERENCES "Users"("ID") ON UPDATE CASCADE,
-	FOREIGN KEY("WarnedBy") REFERENCES "Users"("ID") ON UPDATE CASCADE
+
+CREATE TABLE Tags (
+    TagID       INTEGER NOT NULL,
+    User        INTEGER NOT NULL,
+    Content     TEXT    NOT NULL,
+    LastUpdated INTEGER NOT NULL,
+    FOREIGN KEY (User) REFERENCES Users (ID) ON UPDATE CASCADE,
+    PRIMARY KEY (TagID)
 );
-COMMIT;
+
+CREATE TABLE Users (
+    ID          INTEGER NOT NULL,
+    Name        TEXT    NOT NULL,
+    JoinDate    INTEGER NOT NULL,
+    CreatedDate INTEGER NOT NULL,
+    PrimaryRole INTEGER NOT NULL,
+    [Left]        TEXT    NOT NULL
+                        DEFAULT 'F',
+    FOREIGN KEY (PrimaryRole) REFERENCES Roles (ID) ON UPDATE CASCADE,
+    PRIMARY KEY (ID)
+);
+
+CREATE TABLE Warnings (
+    User     INTEGER NOT NULL,
+    Reason   TEXT    NOT NULL,
+    Date     INTEGER NOT NULL,
+    WarnedBy INTEGER NOT NULL,
+    WarnID   INTEGER NOT NULL,
+    PRIMARY KEY (WarnID),   
+    FOREIGN KEY (User) REFERENCES Users (ID) ON UPDATE CASCADE,
+    FOREIGN KEY (WarnedBy)REFERENCES Users (ID) ON UPDATE CASCADE
+);

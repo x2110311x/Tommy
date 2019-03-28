@@ -4,8 +4,9 @@
 # Main file for running Tommy Bot
 # **************************************** #
 
-# Included Libraries #
+# Include Libraries #
 import discord
+import pylast
 import sqlite3
 import time
 import yaml
@@ -23,10 +24,17 @@ with open(abspath('./include/config.yml'), 'r') as configFile:
 
 intStartTime = int(time.time())  # time the bot started at
 bot = commands.Bot(command_prefix="!")
-userInsert = f"INSERT INTO users (ID, Name, JoinDate, CreatedDate, PrimaryRole) VALUES (?,?,?,?,?)"
-dailyInsert = f"INSERT INTO Dailies (User) VALUES (?)"
-levelInsert = f"INSERT INTO Levels (User) VALUES (?)"
-creditInsert = f"INSERT INTO Credits (User) VALUES (?)"
+
+userInsert = "INSERT INTO users (ID, Name, JoinDate, CreatedDate, PrimaryRole) VALUES (?,?,?,?,?)"
+dailyInsert = "INSERT INTO Dailies (User) VALUES (?)"
+levelInsert = "INSERT INTO Levels (User) VALUES (?)"
+creditInsert = "INSERT INTO Credits (User) VALUES (?)"
+setfmInsert = "INSERT INTO FM (User, LastFMUsername, LastUpdated) VALUES (?,?,?)"
+warnInsert = "INSERT INTO Warnings (User, Reason, Date, WarnedBy) VALUES (?,?,?,?)"
+
+password_hash = pylast.md5(config['FM_Pass'])
+lastfm = pylast.LastFMNetwork(api_key=config['FM_API_Key'], api_secret=config['FM_API_Secret'],
+                              username=config['FM_User'], password_hash=password_hash)
 
 
 # Database connections #
@@ -60,9 +68,9 @@ async def on_member_join(member):
     try:
         DB.execute(userInsert, member.id, username, CreatedDate,
                    JoinDate, member.top_role.id)
-        DB.execute(dailyInsert, member.id)
-        DB.execute(levelInsert, member.id)
-        DB.execute(creditInsert, member.id)
+        DB.execute(dailyInsert, (member.id))
+        DB.execute(levelInsert, (member.id))
+        DB.execute(creditInsert, (member.id))
         DBConn.commit()
     # Update if previously joined #
     except sqlite3.IntegrityError:
@@ -95,6 +103,64 @@ async def epoch(ctx):
 
 
 @bot.command()
+async def setfm(ctx, *, username):
+    try:
+        DB.execute(setfmInsert, (ctx.author.id, username, int(time.time())))
+        await ctx.send("Username Set!")
+    except sqlite3.IntegrityError:
+        DB.execute(
+            f"UPDATE FM SET LastFMUsername={username}, LastUpdated = {int(time.time())} WHERE User={ctx.author.id}")
+        await ctx.send("Username Updated!")
+    DBConn.commit()
+
+
+@bot.command()
+async def fm(ctx):
+    fmSelect = f"SELECT LastFMUsername FROM FM WHERE User = {ctx.author.id}"
+    DB.execute(fmSelect)
+    username = DB.fetchone()
+    if not username is None:
+        try:
+            user = lastfm.get_user(username[0])
+            current_track = user.get_now_playing()
+
+            if current_track is None:
+                current_track = user.get_recent_tracks(limit=1)[0]
+                track = str(current_track.track)
+                album = current_track.album
+                artist = track[0:track.find('-') - 1]
+                track = track[track.find('-') + 2:]
+
+                embedFM = discord.Embed(title="Last Played", colour=0x753543)
+                embedFM.set_author(
+                    name=username, icon_url=ctx.author.avatar_url)
+                embedFM.add_field(
+                    name="Album", value=album, inline=True)
+                embedFM.add_field(name="Song", value=track, inline=True)
+                embedFM.add_field(
+                    name="Artist", value=artist, inline=False)
+            else:
+                imageurl = current_track.get_cover_image(2)
+
+                embedFM = discord.Embed(title="Now Playing", colour=0x753543)
+                embedFM.set_author(
+                    name=username, icon_url=ctx.author.avatar_url)
+                embedFM.set_image(url=imageurl)
+                embedFM.add_field(
+                    name="Album", value=current_track.get_album(), inline=True)
+                embedFM.add_field(
+                    name="Song", value=current_track.title, inline=True)
+                embedFM.add_field(
+                    name="Artist", value=current_track.artist, inline=False)
+            await ctx.send(embed=embedFM)
+        except Exception as e:
+            await ctx.send("Uh Oh! I couldn't get your status")
+            print(e)
+    else:
+        await ctx.send("Please set your username with !setfm")
+
+
+@bot.command()
 @notPingEveryone()
 async def rate(ctx, *, text):
     await ctx.send(f"I would rate {text} **{randint(0,10)} out of 10**")
@@ -106,10 +172,15 @@ async def magic8ball(ctx):
 
 
 @bot.command()
-@commands.has_role(config['roles']['staff_roles']['staff'])
+@commands.has_role(config['staff_Role'])
 @notPingEveryone()
-async def say(ctx, channel, *, text):
-    channel = ctx.message.channel_mentions[0]
+async def say(ctx, *, text):
+    try:
+        channel = ctx.message.channel_mentions[0]
+        txtindex = ctx.message.content.find('>') + 1
+        text = ctx.message.content[txtindex:]
+    except IndexError:
+        channel = ctx.channel
     await channel.send(text)
 
 
@@ -129,7 +200,72 @@ async def uptime(ctx):
 
 
 @bot.command()
-@commands.has_role(config['roles']['staff_roles']['bot_maker'])
+@commands.has_role(config['staff_Role'])
+async def kick(ctx, user):
+    staffRole = bot.get_guild(
+        config['server_ID']).get_role(config['staff_Role'])
+    user = ctx.message.mentions[0]
+    if staffRole not in user.roles:
+        await user.kick(reason=ctx.author.name)
+        await ctx.send(f"{user.mention} has been kicked!")
+    else:
+        await ctx.send("You cannot kick another staff member!")
+
+
+@bot.command()
+@commands.has_role(config['staff_Role'])
+async def ban(ctx, user):
+    staffRole = bot.get_guild(
+        config['server_ID']).get_role(config['staff_Role'])
+    user = ctx.message.mentions[0]
+    if staffRole not in user.roles:
+        await user.ban(reason=ctx.author.name)
+        await ctx.send(f"{user.mention} has been banned!")
+    else:
+        await ctx.send("You cannot ban another staff member!")
+
+
+@bot.command()
+@commands.has_role(config['staff_Role'])
+async def warn(ctx, user, *, reason):
+    user = ctx.message.mentions[0]
+    try:
+        DB.execute(warnInsert, (user.id, reason,
+                                int(time.time()), ctx.author.id))
+        DBConn.commit()
+        await user.send(f"You have been warned for `{reason}`")
+        await ctx.send("User has been warned")
+    except Exception as e:
+        await ctx.send("Unable to warn user")
+        print(e)
+
+
+@bot.command()
+@commands.has_role(config['staff_Role'])
+async def chkwarn(ctx, user):
+    user = ctx.message.mentions[0]
+
+    selectWarn = f"SELECT reason, date FROM Warnings WHERE User={user.id}"
+    DB.execute(selectWarn)
+    warns = DB.fetchall()
+    print(warns)
+
+    embedWarn = discord.Embed(colour=0x753543)
+    embedWarn.set_author(name=user.name, icon_url=user.avatar_url)
+    if warns is None:
+        embedWarn.add_field(name="User has no warns", inline=True)
+        embedWarn.set_footer(text="# of warns: 0")
+    else:
+        warnCount = len(warns)
+        embedWarn.set_footer(text=f"# of warns: {warnCount}")
+        for x in range(0, warnCount):
+            date = datetime.fromtimestamp(warns[x][1]).strftime("%m/%d/%Y, %H:%M:%S") + " EST"
+            embedWarn.add_field(name=f"{x+1}. {warns[x][0]}", value=date, inline=False)
+    await ctx.send(embed=embedWarn)
+
+
+@bot.command()
+@commands.has_role(config['staff_Role'])
 async def exit(ctx):
     await ctx.send("Goodbye")
     DB.close()
@@ -142,7 +278,7 @@ async def on_ready():
     print("Logged in")
 
     # Message Testing Channel #
-    chanTest = bot.get_channel(config['channel_IDs']['staff']['bot-testing'])
+    chanTest = bot.get_channel(config['testing_Channel'])
     await chanTest.send("Bot has started")
 
     # Update Status #
