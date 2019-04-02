@@ -1,0 +1,30 @@
+#***********************************
+# commands.yml
+# file for Tommy bot help command
+#***********************************
+
+staff:
+  say:
+    name: 'say'
+    description: 'Say something using the bot'
+    usage: '`!say [#channel] <text>` \n Mention a channel to say in that channel. Omit it to say in the current channel'
+  ban:
+    name: 'ban'
+    description: 'Ban a user'
+    usage: '`!ban <user>` Make sure to @ the user'
+  kick:
+    name: 'kick'
+    description: 'Kick a user'
+    usage: '`!kick <user>` Make sure to @ the user'
+  warn:
+    name: 'warn'
+    description: 'warn a user'
+    usage: '`!warn <user> <reason>` Make sure to @ the user'
+chkwarn:
+    name: 'chkwarn'
+    description: 'Check a users warns'
+    usage: '`!chkwarn <user>` Make sure to @ the user'
+  mute:
+    name: 'mute'
+    description: 'mute a user'
+    usage: '`!mute <user> <time>` Make sure to @ the user'
