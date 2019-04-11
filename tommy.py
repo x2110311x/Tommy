@@ -5,6 +5,7 @@
 # **************************************** #
 
 # Include Libraries #
+import asyncio
 import discord
 import pylast
 import sqlite3
@@ -35,6 +36,16 @@ warnInsert = "INSERT INTO Warnings (User, Reason, Date, WarnedBy) VALUES (?,?,?,
 password_hash = pylast.md5(config['FM_Pass'])
 lastfm = pylast.LastFMNetwork(api_key=config['FM_API_Key'], api_secret=config['FM_API_Secret'],
                               username=config['FM_User'], password_hash=password_hash)
+
+
+async def unmutetimer(user, mutetime):
+    await asyncio.sleep(mutetime)
+    guild = bot.get_guild(config['server_ID'])
+    muteRole = guild.get_role(config['mute_Role'])
+    defaultRole = guild.get_role(config['join_Role'])
+    await user.remove_roles(muteRole)
+    await user.add_roles(defaultRole)
+    await user.send("You have been unmuted")
 
 
 # Database connections #
@@ -227,6 +238,37 @@ async def ban(ctx, user):
 
 @bot.command()
 @commands.has_role(config['staff_Role'])
+async def mute(ctx, user, time):
+    user = ctx.message.mentions[0]
+    guild = bot.get_guild(config['server_ID'])
+    muteRole = guild.get_role(config['mute_Role'])
+    defaultRole = guild.get_role(config['join_Role'])
+    timeToMute = int(time) * 60
+    try:
+        await user.remove_roles(defaultRole)
+        await user.add_roles(muteRole)
+        await user.send(f"You have been muted for `{time} minutes`")
+        await ctx.send("User has been muted")
+        await unmutetimer(user, timeToMute)
+    except Exception as e:
+        await ctx.send("Unable to mute user")
+        print(e)
+
+@bot.command()
+@commands.has_role(config['staff_Role'])
+async def unmute(ctx, user):
+    user = ctx.message.mentions[0]
+    guild = bot.get_guild(config['server_ID'])
+    muteRole = guild.get_role(config['mute_Role'])
+    defaultRole = guild.get_role(config['join_Role'])
+    if muteRole in user.roles:
+        await user.remove_roles(muteRole)
+        await user.add_roles(defaultRole)
+        await user.send("You have been unmuted")
+        await ctx.send("User has been unmuted")
+
+@bot.command()
+@commands.has_role(config['staff_Role'])
 async def warn(ctx, user, *, reason):
     user = ctx.message.mentions[0]
     try:
@@ -259,8 +301,10 @@ async def chkwarn(ctx, user):
         warnCount = len(warns)
         embedWarn.set_footer(text=f"# of warns: {warnCount}")
         for x in range(0, warnCount):
-            date = datetime.fromtimestamp(warns[x][1]).strftime("%m/%d/%Y, %H:%M:%S") + " EST"
-            embedWarn.add_field(name=f"{x+1}. {warns[x][0]}", value=date, inline=False)
+            date = datetime.fromtimestamp(warns[x][1]).strftime(
+                "%m/%d/%Y, %H:%M:%S") + " EST"
+            embedWarn.add_field(
+                name=f"{x+1}. {warns[x][0]}", value=date, inline=False)
     await ctx.send(embed=embedWarn)
 
 
