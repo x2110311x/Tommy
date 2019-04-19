@@ -6,17 +6,19 @@
 
 # Include Libraries #
 import asyncio
+import io
 import discord
 import pylast
 import sqlite3
 import time
 import yaml
-from datetime import datetime, timedelta
+from math import floor, sqrt
+from datetime import datetime
 from discord.ext import commands
-from include import imageutils, txtutils, utilities
+from include import txtutils, utilities
 from os.path import abspath
-from PIL import Image
 from random import randint
+from PIL import Image, ImageFont, ImageDraw
 
 
 # General Variables #
@@ -130,7 +132,7 @@ async def fm(ctx):
     fmSelect = f"SELECT LastFMUsername FROM FM WHERE User = {ctx.author.id}"
     DB.execute(fmSelect)
     username = DB.fetchone()
-    if not username is None:
+    if username is not None:
         try:
             user = lastfm.get_user(username[0])
             current_track = user.get_now_playing()
@@ -254,6 +256,7 @@ async def mute(ctx, user, time):
         await ctx.send("Unable to mute user")
         print(e)
 
+
 @bot.command()
 @commands.has_role(config['staff_Role'])
 async def unmute(ctx, user):
@@ -266,6 +269,7 @@ async def unmute(ctx, user):
         await user.add_roles(defaultRole)
         await user.send("You have been unmuted")
         await ctx.send("User has been unmuted")
+
 
 @bot.command()
 @commands.has_role(config['staff_Role'])
@@ -309,12 +313,77 @@ async def chkwarn(ctx, user):
 
 
 @bot.command()
+async def daily(ctx):
+    author = ctx.message.author
+    dailyCheck = f"SELECT LastDaily FROM Dailies WHERE user == {author.id}"
+    DB.execute(dailyCheck)
+    dailyDate = DB.fetchone()
+    if dailyDate is not None:
+        dailyDate = int(dailyDate[0]) + 86400
+        if dailyDate <= int(time.time()):
+            dailyImage = Image.open(abspath("./include/daily.png"))
+            unameFnt = ImageFont.truetype(abspath("./include/fonts/calibri.ttf"), 60)
+            unameDraw = ImageDraw.Draw(dailyImage)
+            unameDraw.text((48, 25), f"{author.name}", font=unameFnt, fill=(255, 255, 255))
+            unameDraw.text((48, 87), "Got 200 Credits", font=unameFnt, fill=(0, 0, 0))  # do daily
+            imgByteArr = io.BytesIO()
+            dailyImage.save(imgByteArr, format='PNG')
+            imgByteArr.seek(0)
+            sendFile = discord.File(fp=imgByteArr, filename="daily.png")
+
+            dailyUpdate = f"UPDATE Dailies SET DailyUses = DailyUses + 1, LastDaily={int(time.time())} WHERE User = {author.id}"
+            creditUpdate = f"UPDATE Credits SET Credits = Credits + 200 WHERE User = {author.id}"
+            DB.execute(dailyUpdate)
+            DB.execute(creditUpdate)
+            DBConn.commit()
+            await ctx.send(file=sendFile)
+        else:
+            timeToDaily = utilities.seconds_to_units(dailyDate - int(time.time()))
+            await ctx.send(f"You have `{timeToDaily}` until you can use !daily")
+
+
+@bot.command()
 @commands.has_role(config['staff_Role'])
 async def exit(ctx):
     await ctx.send("Goodbye")
     DB.close()
     await bot.close()
     quit()
+
+
+@bot.listen()
+async def on_message(message):
+    user = message.author
+    timeSelect = f"SELECT NextPoint FROM Levels WHERE User ={user.id}"
+    DB.execute(timeSelect)
+    nextPoint = DB.fetchone()
+    if nextPoint is not None:
+        nextPoint = nextPoint[0]
+        if nextPoint <= int(time.time()):
+            newNext = int(time.time() + 30)
+            updatePoints = f"UPDATE Levels SET Points = Points + 1, MonthPoints = MonthPoints +1, NextPoint = {newNext} WHERE User = {user.id}"
+            DB.execute(updatePoints)
+            selectPoints = f"SELECT Level, Points, MonthLevel, MonthPoints FROM Levels WHERE User = {user.id}"
+            DB.execute(selectPoints)
+            points = DB.fetchone()
+
+            if points is not None:
+                allLevel = points[0]
+                allPoints = points[1]
+                monthLevel = points[2]
+                monthPoints = points[3]
+
+                if floor((59.8 * sqrt(allPoints) - 59.8) / 120) > allLevel:
+                    level = floor((59.8 * sqrt(allPoints) - 59.8) / 120)
+                    updateLevel = f"UPDATE Levels SET Level = {level} WHERE User = {user.id}"
+                    DB.execute(updateLevel)
+                    await message.channel.send(f"<@{user.id}> Level Up! You are at level {level}.")
+
+                if floor((59.8 * sqrt(monthPoints) - 59.8) / 120) > monthLevel:
+                    level = floor((59.8 * sqrt(monthPoints) - 59.8) / 120)
+                    updateLevel = f"UPDATE Levels SET MonthLevel = {level} WHERE User = {user.id}"
+                    DB.execute(updateLevel)
+    DBConn.commit()
 
 
 @bot.event
