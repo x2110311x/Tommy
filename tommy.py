@@ -322,7 +322,7 @@ async def daily(ctx):
     if dailyDate is not None:
         dailyDate = int(dailyDate[0]) + 86400
         if dailyDate <= int(time.time()):
-            dailyImage = Image.open(abspath("./include/daily.png"))
+            dailyImage = Image.open(abspath("./include/images/daily.png"))
             avatarURL = requests.get(author.avatar_url)
             avatarImage = Image.open(io.BytesIO(avatarURL.content))
 
@@ -384,7 +384,7 @@ async def score(ctx):
     else:
         rank = 0
 
-    scoreImage = Image.open(abspath("./include/score.png"))
+    scoreImage = Image.open(abspath("./include/images/score.png"))
     avatarURL = requests.get(userToScore.avatar_url)
     avatarImage = Image.open(io.BytesIO(avatarURL.content))
 
@@ -425,7 +425,7 @@ async def alltop(ctx, page=1):
         rankSelect = rankSelect[rankStart:rankEnd]
         for user in rankSelect:
             users.append(bot.get_user(user[0]))
-        rankImage = Image.open(abspath("./include/rank.png"))
+        rankImage = Image.open(abspath("./include/images/rank.png"))
         unameRankFnt = ImageFont.truetype(abspath("./include/fonts/calibri.ttf"), 30)
         levelPointFnt = ImageFont.truetype(abspath("./include/fonts/calibril.ttf"), 18)
         for x in range(0, 10):
@@ -464,7 +464,7 @@ async def top(ctx, page=1):
         rankSelect = rankSelect[rankStart:rankEnd]
         for user in rankSelect:
             users.append(bot.get_user(user[0]))
-        rankImage = Image.open(abspath("./include/rank.png"))
+        rankImage = Image.open(abspath("./include/images/rank.png"))
         unameRankFnt = ImageFont.truetype(abspath("./include/fonts/calibri.ttf"), 30)
         levelPointFnt = ImageFont.truetype(abspath("./include/fonts/calibril.ttf"), 18)
         for x in range(0, 10):
