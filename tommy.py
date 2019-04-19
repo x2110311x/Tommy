@@ -12,7 +12,8 @@ import pylast
 import sqlite3
 import time
 import yaml
-from math import floor, sqrt
+import requests
+from math import floor, sqrt, ceil
 from datetime import datetime
 from discord.ext import commands
 from include import txtutils, utilities
@@ -146,7 +147,7 @@ async def fm(ctx):
 
                 embedFM = discord.Embed(title="Last Played", colour=0x753543)
                 embedFM.set_author(
-                    name=username, icon_url=ctx.author.avatar_url)
+                    name=username[0], icon_url=ctx.author.avatar_url)
                 embedFM.add_field(
                     name="Album", value=album, inline=True)
                 embedFM.add_field(name="Song", value=track, inline=True)
@@ -157,7 +158,7 @@ async def fm(ctx):
 
                 embedFM = discord.Embed(title="Now Playing", colour=0x753543)
                 embedFM.set_author(
-                    name=username, icon_url=ctx.author.avatar_url)
+                    name=username[0], icon_url=ctx.author.avatar_url)
                 embedFM.set_image(url=imageurl)
                 embedFM.add_field(
                     name="Album", value=current_track.get_album(), inline=True)
@@ -322,10 +323,17 @@ async def daily(ctx):
         dailyDate = int(dailyDate[0]) + 86400
         if dailyDate <= int(time.time()):
             dailyImage = Image.open(abspath("./include/daily.png"))
+            avatarURL = requests.get(author.avatar_url)
+            avatarImage = Image.open(io.BytesIO(avatarURL.content))
+
+            avatarImage.thumbnail((118, 118), Image.ANTIALIAS)
+            dailyImage.paste(avatarImage, (28, 22))
+
             unameFnt = ImageFont.truetype(abspath("./include/fonts/calibri.ttf"), 60)
             unameDraw = ImageDraw.Draw(dailyImage)
-            unameDraw.text((48, 25), f"{author.name}", font=unameFnt, fill=(255, 255, 255))
-            unameDraw.text((48, 87), "Got 200 Credits", font=unameFnt, fill=(0, 0, 0))  # do daily
+            unameDraw.text((176, 18), f"{author.name}", font=unameFnt, fill=(255, 255, 255))
+            unameDraw.text((176, 94), "Got 200 Credits", font=unameFnt, fill=(0, 0, 0))
+
             imgByteArr = io.BytesIO()
             dailyImage.save(imgByteArr, format='PNG')
             imgByteArr.seek(0)
@@ -340,6 +348,147 @@ async def daily(ctx):
         else:
             timeToDaily = utilities.seconds_to_units(dailyDate - int(time.time()))
             await ctx.send(f"You have `{timeToDaily}` until you can use !daily")
+
+
+@bot.command()
+async def score(ctx):
+    if len(ctx.message.mentions) == 1:
+        userToScore = ctx.message.mentions[0]
+    else:
+        userToScore = ctx.message.author
+
+    levelSelect = f"SELECT Level, Points FROM Levels WHERE User ={userToScore.id}"
+    DB.execute(levelSelect)
+    levelsResult = DB.fetchone()
+    if levelsResult is not None:
+        levels = levelsResult[0]
+        points = levelsResult[1]
+        pointsToNext = ceil(4.0268 * (levels + 1)**2 + 4.01338 * (levels + 1) + 1) - points
+    else:
+        levels = 0
+        pointsToNext = 0
+
+    creditsSelect = f"SELECT Credits FROM Credits WHERE User = {userToScore.id}"
+    DB.execute(creditsSelect)
+    creditsResult = DB.fetchone()
+    if creditsResult is not None:
+        credits = creditsResult[0]
+    else:
+        credits = 0
+
+    rankSelect = "SELECT User FROM Levels ORDER BY Points Desc"
+    DB.execute(rankSelect)
+    rankSelect = DB.fetchall()
+    if rankSelect is not None:
+        rank = rankSelect.index((userToScore.id,)) + 1
+    else:
+        rank = 0
+
+    scoreImage = Image.open(abspath("./include/score.png"))
+    avatarURL = requests.get(userToScore.avatar_url)
+    avatarImage = Image.open(io.BytesIO(avatarURL.content))
+
+    avatarImage.thumbnail((121, 121), Image.ANTIALIAS)
+    scoreImage.paste(avatarImage, (13, 72))
+
+    unameFnt = ImageFont.truetype(abspath("./include/fonts/calibrib.ttf"), 40)
+    levelFnt = ImageFont.truetype(abspath("./include/fonts/calibrib.ttf"), 65)
+    rankFnt = ImageFont.truetype(abspath("./include/fonts/calibrib.ttf"), 50)
+
+    unameDraw = ImageDraw.Draw(scoreImage)
+    levelDraw = ImageDraw.Draw(scoreImage)
+    rankDraw = ImageDraw.Draw(scoreImage)
+
+    unameDraw.text((143, 18), userToScore.name, font=unameFnt, fill=(255, 255, 255))
+    unameDraw.text((16, 261), str(credits), font=unameFnt, fill=(255, 255, 255))
+    unameDraw.text((16, 340), str(pointsToNext), font=unameFnt, fill=(255, 255, 255))
+    levelDraw.text((143, 130), str(levels), font=levelFnt, fill=(255, 255, 255))
+    rankDraw.text((407, 109), str(rank), font=rankFnt, fill=(255, 255, 255))
+
+    imgByteArr = io.BytesIO()
+    scoreImage.save(imgByteArr, format='PNG')
+    imgByteArr.seek(0)
+    sendFile = discord.File(fp=imgByteArr, filename="score.png")
+
+    await ctx.send(file=sendFile)
+
+
+@bot.command()
+async def alltop(ctx, page=1):
+    rankEnd = (10 * page)
+    rankStart = rankEnd - 10
+    rankSelect = "SELECT User, Points, Level FROM Levels ORDER BY Points Desc"
+    DB.execute(rankSelect)
+    rankSelect = DB.fetchall()
+    users = []
+    if rankSelect is not None:
+        rankSelect = rankSelect[rankStart:rankEnd]
+        for user in rankSelect:
+            users.append(bot.get_user(user[0]))
+        rankImage = Image.open(abspath("./include/rank.png"))
+        unameRankFnt = ImageFont.truetype(abspath("./include/fonts/calibri.ttf"), 30)
+        levelPointFnt = ImageFont.truetype(abspath("./include/fonts/calibril.ttf"), 18)
+        for x in range(0, 10):
+            avatarURL = requests.get(users[x].avatar_url)
+            avatarImage = Image.open(io.BytesIO(avatarURL.content))
+
+            avatarImage.thumbnail((42, 42), Image.ANTIALIAS)
+            rankImage.paste(avatarImage, (80, (64 + x * 53)))
+
+            textDraw = ImageDraw.Draw(rankImage)
+            textDraw.text((139, (64 + x * 53)), str(users[x].name), font=unameRankFnt, fill=(255, 255, 255))
+            textDraw.text((36, (70 + x * 53)), str(rankStart + x + 1), font=unameRankFnt, fill=(255, 255, 255))
+
+            textDraw.text((166, (92 + x * 53)), f"Points:  {rankSelect[x][1]}", font=levelPointFnt, fill=(255, 255, 255))
+            textDraw.text((305, (92 + x * 53)), f"Level:  {rankSelect[x][2]}", font=levelPointFnt, fill=(255, 255, 255))
+
+        imgByteArr = io.BytesIO()
+        rankImage.save(imgByteArr, format='PNG')
+        imgByteArr.seek(0)
+        sendFile = discord.File(fp=imgByteArr, filename="leaderboard.png")
+
+        await ctx.send(file=sendFile)
+    else:
+        await ctx.send("Couldn't get ranks. Try again later")
+
+
+@bot.command()
+async def top(ctx, page=1):
+    rankEnd = (10 * page)
+    rankStart = rankEnd - 10
+    rankSelect = "SELECT User, MonthPoints, MonthLevel FROM Levels ORDER BY MonthPoints Desc"
+    DB.execute(rankSelect)
+    rankSelect = DB.fetchall()
+    users = []
+    if rankSelect is not None:
+        rankSelect = rankSelect[rankStart:rankEnd]
+        for user in rankSelect:
+            users.append(bot.get_user(user[0]))
+        rankImage = Image.open(abspath("./include/rank.png"))
+        unameRankFnt = ImageFont.truetype(abspath("./include/fonts/calibri.ttf"), 30)
+        levelPointFnt = ImageFont.truetype(abspath("./include/fonts/calibril.ttf"), 18)
+        for x in range(0, 10):
+            avatarURL = requests.get(users[x].avatar_url)
+            avatarImage = Image.open(io.BytesIO(avatarURL.content))
+
+            avatarImage.thumbnail((42, 42), Image.ANTIALIAS)
+            rankImage.paste(avatarImage, (80, (64 + x * 53)))
+
+            textDraw = ImageDraw.Draw(rankImage)
+            textDraw.text((139, (64 + x * 53)), str(users[x].name), font=unameRankFnt, fill=(255, 255, 255))
+            textDraw.text((36, (70 + x * 53)), str(rankStart + x + 1), font=unameRankFnt, fill=(255, 255, 255))
+
+            textDraw.text((166, (92 + x * 53)), f"Points:  {rankSelect[x][1]}", font=levelPointFnt, fill=(255, 255, 255))
+            textDraw.text((305, (92 + x * 53)), f"Level:  {rankSelect[x][2]}", font=levelPointFnt, fill=(255, 255, 255))
+
+        imgByteArr = io.BytesIO()
+        rankImage.save(imgByteArr, format='PNG')
+        imgByteArr.seek(0)
+        sendFile = discord.File(fp=imgByteArr, filename="leaderboard.png")
+
+        await ctx.send(file=sendFile)
+    else:
+        await ctx.send("Couldn't get ranks. Try again later")
 
 
 @bot.command()
