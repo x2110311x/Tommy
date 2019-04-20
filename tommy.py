@@ -61,6 +61,10 @@ class PingsEveryone(commands.CheckFailure):
     pass
 
 
+class SaidNoError(Exception):
+    pass
+
+
 def notPingEveryone():
     async def predicate(ctx):
         if ctx.message.clean_content.find("@everyone") != -1:
@@ -411,6 +415,152 @@ async def score(ctx):
     sendFile = discord.File(fp=imgByteArr, filename="score.png")
 
     await ctx.send(file=sendFile)
+
+
+@bot.command()
+async def createtag(ctx, name, *, content):
+    author = ctx.message.author
+    checkSelect = f"SELECT count(TagName) FROM Tags WHERE TagName = '{name}'"
+    DB.execute(checkSelect)
+    count = DB.fetchone()
+    if count is not None:
+        if count[0] != 1:
+            creditCheck = f"SELECT Credits FROM Credits WHERE User = {author.id}"
+            DB.execute(creditCheck)
+            credits = DB.fetchone()
+            if credits is not None:
+                if credits[0] >= 1000:
+                    def check(m):
+                        if m.author == author and m.channel == ctx.message.channel:
+                            if m.content.lower() == 'yes':
+                                return True
+                            elif m.content.lower() == 'no':
+                                raise SaidNoError
+                            else:
+                                return False
+                        else:
+                            return False
+                    tagPrompt = f"Would you like to create the tag `{name}` with content `{content}`?"
+                    await ctx.send(f"Creating a tag will cost `1000 credits`. \n{tagPrompt}")
+                    try:
+                        await bot.wait_for('message', check=check, timeout=30)
+                        nowTime = int(time.time())
+                        tagInsert = f"INSERT INTO Tags (TagName, User, Content, LastUpdated) VALUES ('{name}', {author.id}, '{content}', {nowTime})"
+                        DB.execute(tagInsert)
+                        creditsUpdate = f"UPDATE Credits SET Credits = Credits - 1000 WHERE User = {author.id}"
+                        DB.execute(creditsUpdate)
+                        DBConn.commit()
+                        await ctx.send("Tag Created!")
+                    except asyncio.TimeoutError:
+                        await ctx.send("Timeout reached. Tag creation cancelled!")
+                    except SaidNoError:
+                        await ctx.send("Tag creation cancelled")
+
+                else:
+                    await ctx.send("You do not have enough credits!")
+        else:
+            await ctx.send(f"Tag `{name}` already exists!")
+    else:
+        await ctx.send("Error creating tag")
+
+
+@bot.command()
+async def deletetag(ctx, tag):
+    author = ctx.message.author
+    tagSelect = f"SELECT User FROM Tags WHERE TagName ='{tag}'"
+    DB.execute(tagSelect)
+    tagResult = DB.fetchone()
+    if tagResult is not None:
+        userCreated = tagResult[0]
+        if author.id == userCreated:
+            def check(m):
+                if m.author == author and m.channel == ctx.message.channel:
+                    if m.content.lower() == 'yes':
+                        return True
+                    elif m.content.lower() == 'no':
+                        raise SaidNoError
+                    else:
+                        return False
+                else:
+                    return False
+            await ctx.send(f"Are you sure you want to delete your tag titled `{tag}`?")
+            try:
+                await bot.wait_for('message', check=check, timeout=30)
+                tagDelete = f"DELETE FROM Tags WHERE TagName ='{tag}'"
+                DB.execute(tagDelete)
+                DBConn.commit()
+                await ctx.send("Tag deleted!")
+            except asyncio.TimeoutError:
+                await ctx.send("Timeout reached. Tag deletion cancelled!")
+            except SaidNoError:
+                await ctx.send("Tag deletion cancelled")
+        else:
+            await ctx.send("You did not create this tag, so you cannot delete it!")
+    else:
+        await ctx.send("Tag does not exist")
+
+
+@bot.command()
+async def tag(ctx, name):
+    tagSelect = f"SELECT Content FROM Tags WHERE TagName ='{name}'"
+    DB.execute(tagSelect)
+    tagResult = DB.fetchone()
+    if tagResult is not None:
+        await ctx.send(f"{tagResult[0]}")
+    else:
+        await ctx.send("Tag does not exist")
+
+
+@bot.command()
+async def edittag(ctx, name, *, content):
+    author = ctx.message.author
+    tagSelect = f"SELECT User,Content FROM Tags WHERE TagName ='{name}'"
+    DB.execute(tagSelect)
+    tagResult = DB.fetchone()
+    if tagResult is not None:
+        userCreated = tagResult[0]
+        if author.id == userCreated:
+            def check(m):
+                if m.author == author and m.channel == ctx.message.channel:
+                    if m.content.lower() == 'yes':
+                        return True
+                    elif m.content.lower() == 'no':
+                        raise SaidNoError
+                    else:
+                        return False
+                else:
+                    return False
+            await ctx.send(f"Are you sure you want to edit your tag titled `{name}` from \n`{tagResult[1]}` to `{content}`?")
+            try:
+                await bot.wait_for('message', check=check, timeout=30)
+                tagDelete = f"UPDATE Tags SET Content = '{content}' WHERE TagName ='{name}'"
+                DB.execute(tagDelete)
+                DBConn.commit()
+                await ctx.send("Tag Edited!")
+            except asyncio.TimeoutError:
+                await ctx.send("Timeout reached. Tag edit cancelled!")
+            except SaidNoError:
+                await ctx.send("Tag edit cancelled")
+        else:
+            await ctx.send("You did not create this tag, so you cannot edit it!")
+    else:
+        await ctx.send("Tag does not exist")
+
+
+@bot.command()
+async def mytags(ctx):
+    author = ctx.message.author
+    tagSelect = f"SELECT TagName FROM Tags WHERE User = {author.id}"
+    DB.execute(tagSelect)
+    tags = DB.fetchall()
+    if len(tags) > 0:
+        userTags = "Here are your tags\n```\n"
+        for tag in tags:
+            userTags += f"{tag[0]}\n"
+        userTags += "```"
+        await ctx.send(userTags)
+    else:
+        await ctx.send("You have no tags")
 
 
 @bot.command()
