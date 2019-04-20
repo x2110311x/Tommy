@@ -6,20 +6,26 @@
 
 # Include Libraries #
 import asyncio
-import io
 import discord
+import io
 import pylast
+import requests
 import sqlite3
 import time
 import yaml
-import requests
-from math import floor, sqrt, ceil
+
+from PIL import Image
+from PIL import ImageDraw
+from PIL import ImageFont
 from datetime import datetime
 from discord.ext import commands
-from include import txtutils, utilities
+from include import txtutils
+from include import utilities
+from math import ceil
+from math import floor
+from math import sqrt
 from os.path import abspath
 from random import randint
-from PIL import Image, ImageFont, ImageDraw
 
 
 # General Variables #
@@ -41,28 +47,48 @@ lastfm = pylast.LastFMNetwork(api_key=config['FM_API_Key'], api_secret=config['F
                               username=config['FM_User'], password_hash=password_hash)
 
 
-async def unmutetimer(user, mutetime):
-    await asyncio.sleep(mutetime)
-    guild = bot.get_guild(config['server_ID'])
-    muteRole = guild.get_role(config['mute_Role'])
-    defaultRole = guild.get_role(config['join_Role'])
-    await user.remove_roles(muteRole)
-    await user.add_roles(defaultRole)
-    await user.send("You have been unmuted")
-
-
 # Database connections #
 DBConn = sqlite3.connect(abspath(config['DBFile']))
 DB = DBConn.cursor()
 
 
-# Checks #
 class PingsEveryone(commands.CheckFailure):
     pass
 
 
 class SaidNoError(Exception):
     pass
+
+
+async def minutetasks():
+    curTime = int(time.time())
+    muteSelect = f"SELECT User FROM Mutes WHERE UnmuteTime <= {curTime}"
+    DB.execute(muteSelect)
+    unmutes = DB.fetchall()
+    if len(unmutes) > 0:
+        for user in unmutes:
+            user = bot.get_user(user[0])
+            guild = bot.get_guild(config['server_ID'])
+            muteRole = guild.get_role(config['mute_Role'])
+            defaultRole = guild.get_role(config['join_Role'])
+            await user.remove_roles(muteRole)
+            await user.add_roles(defaultRole)
+            await user.send("You have been unmuted")
+            deleteMute = f"DELETE FROM Mutes WHERE User ={user.id}"
+            DB.execute(deleteMute)
+    remindSelect = f"SELECT User, Reminder FROM Reminders WHERE date <= {curTime}"
+    DB.execute(remindSelect)
+    reminds = DB.fetchall()
+    if len(reminds) > 0:
+        for remind in reminds:
+            user = bot.get_user(remind[0])
+            reason = remind[1]
+            await user.send(f"You are being reminded for `{reason}`")
+            deleteReminder = f"DELETE FROM Reminders WHERE User = {user.id} AND Reminder = '{reason}' AND Date < {curTime}"
+            DB.execute(deleteReminder)
+    DBConn.commit()
+    await asyncio.sleep(20)
+    await minutetasks()
 
 
 def notPingEveryone():
@@ -245,18 +271,20 @@ async def ban(ctx, user):
 
 @bot.command()
 @commands.has_role(config['staff_Role'])
-async def mute(ctx, user, time):
+async def mute(ctx, user, mutetime):
     user = ctx.message.mentions[0]
     guild = bot.get_guild(config['server_ID'])
     muteRole = guild.get_role(config['mute_Role'])
     defaultRole = guild.get_role(config['join_Role'])
-    timeToMute = int(time) * 60
+    timeToMute = int(mutetime) * 60 + int(time.time())
     try:
+        muteInsert = f"INSERT INTO Mutes (User, UnmuteTime) VALUES ({user.id}, {timeToMute})"
+        DB.execute(muteInsert)
+        DBConn.commit()
         await user.remove_roles(defaultRole)
         await user.add_roles(muteRole)
-        await user.send(f"You have been muted for `{time} minutes`")
+        await user.send(f"You have been muted for `{mutetime} minutes`")
         await ctx.send("User has been muted")
-        await unmutetimer(user, timeToMute)
     except Exception as e:
         await ctx.send("Unable to mute user")
         print(e)
@@ -352,6 +380,37 @@ async def daily(ctx):
         else:
             timeToDaily = utilities.seconds_to_units(dailyDate - int(time.time()))
             await ctx.send(f"You have `{timeToDaily}` until you can use !daily")
+
+
+@bot.command()
+async def remind(ctx, remindtime, *, reason):
+    try:
+        remindEpoch = int(time.time()) + (int(remindtime) * 60)
+        author = ctx.message.author
+        remindInsert = f"INSERT INTO Reminders (User, Reminder, Date) VALUES ({author.id},'{reason}',{remindEpoch})"
+        DB.execute(remindInsert)
+        DBConn.commit()
+        await ctx.send(f"You will be reminded in {remindtime} minutes for `{reason}`")
+    except ValueError:
+        await ctx.send("Please do not use decimals")
+
+
+@bot.command()
+async def myreminders(ctx):
+    author = ctx.message.author
+    remindSelect = f"SELECT Reminder, Date FROM Reminders WHERE User = {author.id}"
+    DB.execute(remindSelect)
+    reminds = DB.fetchall()
+    if len(reminds) > 0:
+        remindString = "Your reminders: \n```\n"
+        for remind in reminds:
+            reason = remind[0]
+            date = ceil((remind[1] - int(time.time())) / 60)
+            remindString += f"{reason}  in about {date} minutes \n"
+        remindString += "```"
+        await ctx.send(remindString)
+    else:
+        await ctx.send("You have no reminders")
 
 
 @bot.command()
@@ -564,6 +623,49 @@ async def mytags(ctx):
 
 
 @bot.command()
+async def donate(ctx, user, amount):
+    if len(ctx.message.mentions) > 0:
+        user = ctx.message.mentions[0]
+        if int(amount) <= 1000:
+            author = ctx.message.author
+            creditCheck = f"SELECT Credits FROM Credits WHERE User = {author.id}"
+            DB.execute(creditCheck)
+            credits = DB.fetchone()
+            if credits is not None:
+                if credits[0] >= int(amount):
+                    def check(m):
+                        if m.author == author and m.channel == ctx.message.channel:
+                            if m.content.lower() == 'yes':
+                                return True
+                            elif m.content.lower() == 'no':
+                                raise SaidNoError
+                            else:
+                                return False
+                        else:
+                            return False
+                    await ctx.send(f"Are you sure you want to donate `{amount} credits` to {user.mention}?")
+                    try:
+                        await bot.wait_for('message', check=check, timeout=30)
+                        updateDonator = f"UPDATE Credits SET Credits = Credits - {int(amount)} WHERE User = {author.id}"
+                        updateDonatee = f"UPDATE Credits SET Credits = Credits +{int(amount)} WHERE User = {user.id}"
+                        DB.execute(updateDonator)
+                        DB.execute(updateDonatee)
+                        await ctx.send(f"You donated {amount} credits to {user.mention}")
+                        DBConn.commit()
+                    except asyncio.TimeoutError:
+                        await ctx.send("Timeout reached. Donation cancelled!")
+                    except SaidNoError:
+                        await ctx.send("Donation cancelled")
+                else:
+                    await ctx.send("You do not have enough credits!")
+        else:
+            await ctx.send("You can only donate 1000 credits at once")
+
+    else:
+        await ctx.send("You didn't mention a user!")
+
+
+@bot.command()
 async def alltop(ctx, page=1):
     rankEnd = (10 * page)
     rankStart = rankEnd - 10
@@ -692,6 +794,7 @@ async def on_ready():
     # Message Testing Channel #
     chanTest = bot.get_channel(config['testing_Channel'])
     await chanTest.send("Bot has started")
+    await minutetasks()
 
     # Update Status #
     guild = bot.get_guild(config['server_ID'])
