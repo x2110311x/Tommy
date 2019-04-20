@@ -1,9 +1,19 @@
+--
+-- File generated with SQLiteStudio v3.2.1 on Fri Apr 19 23:25:33 2019
+--
+-- Text encoding used: System
+--
+PRAGMA foreign_keys = off;
+BEGIN TRANSACTION;
+
+-- Table: ChannelCategories
 CREATE TABLE ChannelCategories (
     ID   INTEGER NOT NULL,
     Name TEXT    NOT NULL,
     PRIMARY KEY (ID)
 );
 
+-- Table: Channels
 CREATE TABLE Channels (
     ID       INTEGER NOT NULL,
     Name     TEXT    NOT NULL,
@@ -13,6 +23,7 @@ CREATE TABLE Channels (
     FOREIGN KEY (Category) REFERENCES ChannelCategories (ID) ON UPDATE CASCADE
 );
 
+-- Table: Credits
 CREATE TABLE Credits (
     User    INTEGER NOT NULL,
     Credits INTEGER NOT NULL
@@ -21,6 +32,7 @@ CREATE TABLE Credits (
     FOREIGN KEY (User) REFERENCES Users (ID) ON UPDATE CASCADE
 );
 
+-- Table: Dailies
 CREATE TABLE Dailies (
     User      INTEGER NOT NULL,
     DailyUses INTEGER NOT NULL
@@ -31,6 +43,7 @@ CREATE TABLE Dailies (
     PRIMARY KEY (User)
 );
 
+-- Table: FM
 CREATE TABLE FM (
     User           INTEGER NOT NULL,
     LastFMUsername TEXT    NOT NULL,
@@ -39,20 +52,13 @@ CREATE TABLE FM (
     PRIMARY KEY (User)
 );
 
-CREATE TABLE Levels (
-    User        INTEGER NOT NULL,
-    Level       INTEGER NOT NULL
-                        DEFAULT 0,
-    Points      INTEGER NOT NULL
-                        DEFAULT 0,
-    MonthLevel  INTEGER NOT NULL
-                        DEFAULT 0,
-    MonthPoints INTEGER NOT NULL
-                        DEFAULT 0,
-    PRIMARY KEY (User),
-    FOREIGN KEY (User) REFERENCES Users (ID) ON UPDATE CASCADE
-);
+-- Table: Levels
+CREATE TABLE Levels (User INTEGER NOT NULL, Level INTEGER NOT NULL DEFAULT 0, Points INTEGER NOT NULL DEFAULT 0, MonthLevel INTEGER NOT NULL DEFAULT 0, MonthPoints INTEGER NOT NULL DEFAULT 0, NextPoint INTEGER DEFAULT (0), PRIMARY KEY (User), FOREIGN KEY (User) REFERENCES Users (ID) ON UPDATE CASCADE);
 
+-- Table: Mutes
+CREATE TABLE Mutes (User INTEGER PRIMARY KEY REFERENCES Users (ID) ON UPDATE CASCADE NOT NULL, UnmuteTime INTEGER NOT NULL);
+
+-- Table: OwnedRoles
 CREATE TABLE OwnedRoles (
     User         INTEGER NOT NULL,
     Role         INTEGER NOT NULL,
@@ -63,6 +69,10 @@ CREATE TABLE OwnedRoles (
     FOREIGN KEY (Role) REFERENCES Roles (ID) ON UPDATE CASCADE
 );
 
+-- Table: Reminders
+CREATE TABLE Reminders (User INTEGER REFERENCES Users (ID) ON UPDATE CASCADE NOT NULL, Reminder TEXT NOT NULL, Date INTEGER NOT NULL, RemindID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL);
+
+-- Table: Roles
 CREATE TABLE Roles (
     Name     TEXT    NOT NULL,
     ID       INTEGER NOT NULL,
@@ -72,15 +82,10 @@ CREATE TABLE Roles (
     PRIMARY KEY (ID)
 );
 
-CREATE TABLE Tags (
-    TagID       INTEGER NOT NULL,
-    User        INTEGER NOT NULL,
-    Content     TEXT    NOT NULL,
-    LastUpdated INTEGER NOT NULL,
-    FOREIGN KEY (User) REFERENCES Users (ID) ON UPDATE CASCADE,
-    PRIMARY KEY (TagID)
-);
+-- Table: Tags
+CREATE TABLE Tags (TagName TEXT NOT NULL, User INTEGER NOT NULL, Content TEXT NOT NULL, LastUpdated INTEGER NOT NULL, FOREIGN KEY (User) REFERENCES Users (ID) ON UPDATE CASCADE, PRIMARY KEY (TagName));
 
+-- Table: Users
 CREATE TABLE Users (
     ID          INTEGER NOT NULL,
     Name        TEXT    NOT NULL,
@@ -93,13 +98,17 @@ CREATE TABLE Users (
     PRIMARY KEY (ID)
 );
 
+-- Table: Warnings
 CREATE TABLE Warnings (
     User     INTEGER NOT NULL,
     Reason   TEXT    NOT NULL,
     Date     INTEGER NOT NULL,
     WarnedBy INTEGER NOT NULL,
     WarnID   INTEGER NOT NULL,
-    PRIMARY KEY (WarnID),   
+    PRIMARY KEY (WarnID),
     FOREIGN KEY (User) REFERENCES Users (ID) ON UPDATE CASCADE,
     FOREIGN KEY (WarnedBy)REFERENCES Users (ID) ON UPDATE CASCADE
 );
+
+COMMIT TRANSACTION;
+PRAGMA foreign_keys = on;

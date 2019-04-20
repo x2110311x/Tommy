@@ -67,10 +67,10 @@ async def minutetasks():
     unmutes = DB.fetchall()
     if len(unmutes) > 0:
         for user in unmutes:
-            user = bot.get_user(user[0])
             guild = bot.get_guild(config['server_ID'])
             muteRole = guild.get_role(config['mute_Role'])
             defaultRole = guild.get_role(config['join_Role'])
+            user = guild.get_member(user[0])
             await user.remove_roles(muteRole)
             await user.add_roles(defaultRole)
             await user.send("You have been unmuted")
@@ -276,18 +276,26 @@ async def mute(ctx, user, mutetime):
     guild = bot.get_guild(config['server_ID'])
     muteRole = guild.get_role(config['mute_Role'])
     defaultRole = guild.get_role(config['join_Role'])
-    timeToMute = int(mutetime) * 60 + int(time.time())
-    try:
-        muteInsert = f"INSERT INTO Mutes (User, UnmuteTime) VALUES ({user.id}, {timeToMute})"
-        DB.execute(muteInsert)
-        DBConn.commit()
-        await user.remove_roles(defaultRole)
-        await user.add_roles(muteRole)
-        await user.send(f"You have been muted for `{mutetime} minutes`")
-        await ctx.send("User has been muted")
-    except Exception as e:
-        await ctx.send("Unable to mute user")
-        print(e)
+    staffRole = guild.get_role(config['staff_Role'])
+    if staffRole not in user.roles:
+        try:
+            timeToMute = int(mutetime) * 60 + int(time.time())
+        except ValueError:
+            await ctx.send("Please use integers")
+
+        try:
+            muteInsert = f"INSERT INTO Mutes (User, UnmuteTime) VALUES ({user.id}, {timeToMute})"
+            DB.execute(muteInsert)
+            DBConn.commit()
+            await user.remove_roles(defaultRole)
+            await user.add_roles(muteRole)
+            await user.send(f"You have been muted for `{mutetime} minutes`")
+            await ctx.send("User has been muted")
+        except Exception as e:
+            await ctx.send("Unable to mute user")
+            print(e)
+    else:
+        await ctx.send("You cannot mute another staff member!")
 
 
 @bot.command()
