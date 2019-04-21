@@ -25,6 +25,13 @@ Staff:
   unmute:
     brief: "Unmute a user"
     usage: "<user> \nMake sure to @ the user"
+  userinfo:
+    brief: "Get information about a user"
+    usage: "<user> \nMake sure to @ the user"
+  roleinfo:
+    brief: "Get information about a role"
+    usage: "<role> \nName is case sensitive"
+
 
 Fun:
   rate:
@@ -50,6 +57,9 @@ CreditsScore:
   top:
     brief: "Check the monthly leaderboard"
     usage: "[page] \nIf page is omited, it will show the first page"
+  monthlyreset:
+    brief: "Reset the monthly scores"
+    usage: "Only x2 can do this"
 
 Tags:
   createtag:
@@ -97,3 +107,17 @@ Utilities:
   reloadextensions:
     brief: "[X2] Reload Bot Extensions"
     usage: "Only x2 can do this"
+  update:
+    brief: "[X2] Update Bot Files"
+    usage: "Only x2 can do this"
+  restart:
+    brief: "[X2] Restart bot server"
+    usage: "Only x2 can do this"
+
+ShopandRoles:
+  pingon:
+    brief: "Add ping roles"
+    usage: "  Bot will DM you"
+  pingoff:
+    brief: "Remove ping roles"
+    usage: "  Bot will DM you"

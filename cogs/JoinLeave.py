@@ -88,3 +88,7 @@ class JoinLeave(commands.Cog):
 
 def setup(bot):
     bot.add_cog(JoinLeave(bot))
+
+
+def teardown(bot):
+    DB.close()

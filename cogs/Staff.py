@@ -28,12 +28,8 @@ class Staff(commands.Cog, name="Staff Commands"):
 
     @commands.command(brief=helpInfo['say']['brief'], usage=helpInfo['say']['usage'])
     @commands.has_role(config['staff_Role'])
-    async def say(self, ctx, *, textToSay):
-        try:
-            channel = ctx.message.channel_mentions[0]
-            txtindex = ctx.message.content.find('>') + 1
-            textToSay = ctx.message.content[txtindex:]
-        except IndexError:
+    async def say(self, ctx, channel: discord.TextChannel = None, *, textToSay):
+        if channel is None:
             channel = ctx.channel
         await channel.send(textToSay)
 
@@ -88,7 +84,7 @@ class Staff(commands.Cog, name="Staff Commands"):
 
     @commands.command(brief=helpInfo['warn']['brief'], usage=helpInfo['warn']['usage'])
     @commands.has_role(config['staff_Role'])
-    async def warn(ctx, user: discord.Member, *, reason):
+    async def warn(self, ctx, user: discord.Member, *, reason):
         try:
             warnInsert = "INSERT INTO Warnings (User, Reason, Date, WarnedBy) VALUES (?,?,?,?)"
             DB.execute(warnInsert, (user.id, reason,
@@ -121,7 +117,6 @@ class Staff(commands.Cog, name="Staff Commands"):
         selectWarn = f"SELECT reason, date FROM Warnings WHERE User={user.id}"
         DB.execute(selectWarn)
         warns = DB.fetchall()
-        print(warns)
 
         embedWarn = discord.Embed(colour=0x753543)
         embedWarn.set_author(name=user.name, icon_url=user.avatar_url)
@@ -138,6 +133,62 @@ class Staff(commands.Cog, name="Staff Commands"):
                     name=f"{x+1}. {warns[x][0]}", value=date, inline=False)
         await ctx.send(embed=embedWarn)
 
+    @commands.command(brief=helpInfo['userinfo']['brief'], usage=helpInfo['userinfo']['usage'])
+    @commands.has_role(config['staff_Role'])
+    async def userinfo(self, ctx, user: discord.Member):
+        selectWarn = f"SELECT count(date) FROM Warnings WHERE User={user.id}"
+        selectDailies = f"SELECT DailyUses FROM Dailies WHERE User={user.id}"
+        DB.execute(selectWarn)
+        warns = DB.fetchone()
+        if warns is not None:
+            warns = warns[0]
+        else:
+            warns = 0
+        DB.execute(selectDailies)
+        dailyUses = DB.fetchone()[0]
+        warnCount = warns
+        joinDate = user.joined_at.strftime("%m/%d/%Y, %H:%M:%S") + " EST"
+        createdDate = user.created_at.strftime("%m/%d/%Y, %H:%M:%S") + " EST"
+        userRoles = user.roles
+        rolestr = ""
+        for role in userRoles:
+            if role.id not in [config['server_ID'], 555583424728137728]:
+                rolestr += f"{role.mention}, "
+        rolestr = rolestr[:len(rolestr) - 2]
+        embedInfo = discord.Embed(colour=0x753543)
+        embedInfo.set_author(name=user.name, icon_url=user.avatar_url)
+        embedInfo.add_field(name="User ID", value=user.id, inline=False)
+        embedInfo.add_field(name="Last Join Date", value=joinDate, inline=False)
+        embedInfo.add_field(name="Account Creation Date", value=createdDate, inline=False)
+        embedInfo.add_field(name="# of warns", value=warnCount, inline=False)
+        embedInfo.add_field(name="Daily Uses", value=dailyUses, inline=False)
+        embedInfo.add_field(name="roles", value=rolestr, inline=False)
+
+        await ctx.send(embed=embedInfo)
+
+    @commands.command(brief=helpInfo['roleinfo']['brief'], usage=helpInfo['roleinfo']['usage'])
+    @commands.has_role(config['staff_Role'])
+    async def roleinfo(self, ctx, role: discord.Role):
+        usersWithRole = 0
+        for user in ctx.message.channel.guild.members:
+            if role in user.roles:
+                usersWithRole += 1
+        createdDate = role.created_at.strftime("%m/%d/%Y, %H:%M:%S") + " EST"
+        embedRole = discord.Embed(colour=0x753543)
+        embedRole.set_author(name=role.name)
+        embedRole.add_field(name="Role ID", value=role.id, inline=False)
+        embedRole.add_field(name="Role Color", value=f"{role.mention} - {hex(role.color.value)}", inline=False)
+        embedRole.add_field(name="Hoisted?", value=role.hoist, inline=False)
+        embedRole.add_field(name="Mentionable?", value=role.mentionable, inline=False)
+        embedRole.add_field(name="Role Created:", value=createdDate, inline=False)
+        embedRole.add_field(name="Users with role", value=usersWithRole, inline=False)
+
+        await ctx.send(embed=embedRole)
+
 
 def setup(bot):
     bot.add_cog(Staff(bot))
+
+
+def teardown(bot):
+    DB.close()

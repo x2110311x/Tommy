@@ -31,6 +31,10 @@ DBConn = sqlite3.connect(abspath(config['DBFile']))
 DB = DBConn.cursor()
 
 
+async def is_owner(ctx):
+    return ctx.author.id == 207129652345438211
+
+
 class SaidNoError(Exception):
     pass
 
@@ -269,6 +273,15 @@ class CreditsScore(commands.Cog, name="Credits, Score and Rank Commands"):
         else:
             await ctx.send("Couldn't get ranks. Try again later")
 
+    @commands.command(brief=helpInfo['monthlyreset']['brief'], usage=helpInfo['monthlyreset']['usage'])
+    @commands.check(is_owner)
+    async def monthlyreset(self, ctx):
+        await ctx.send("Resetting monthly scores")
+        updateMonthly = "UPDATE Levels SET MonthPoints = 0, MonthLevel = 0"
+        DB.execute(updateMonthly)
+        DBConn.commit()
+        await ctx.send("Done!")
+
     @commands.Cog.listener()
     async def on_message(self, message):
         user = message.author
@@ -306,3 +319,7 @@ class CreditsScore(commands.Cog, name="Credits, Score and Rank Commands"):
 
 def setup(bot):
     bot.add_cog(CreditsScore(bot))
+
+
+def teardown(bot):
+    DB.close()

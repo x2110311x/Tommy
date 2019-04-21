@@ -38,7 +38,9 @@ startup_extensions = ["cogs.JoinLeave",
                       "cogs.Tags",
                       "cogs.Reminders",
                       "cogs.Gold",
-                      "cogs.Fun"]
+                      "cogs.Fun",
+                      "cogs.AuditLogs",
+                      "cogs.ShopandRoles"]
 
 for extension in startup_extensions:
     bot.load_extension(extension)
@@ -53,6 +55,11 @@ async def is_owner(ctx):
     return ctx.author.id == 207129652345438211
 
 
+@bot.check
+async def globally_block_dms(ctx):
+    return ctx.guild is not None
+
+
 class Utilities(commands.Cog, name="Utility Commands"):
     def __init__(self, bot):
         self.bot = bot
@@ -63,39 +70,21 @@ class Utilities(commands.Cog, name="Utility Commands"):
         intCurEpoch = int(time.time())
         await ctx.send(f"The current epoch is {intCurEpoch}")
 
-    @commands.command(brief=helpInfo['reloadextensions']['brief'], usage=helpInfo['reloadextensions']['usage'], alias="reloadexts")
+    @commands.command(brief=helpInfo['reloadextensions']['brief'], usage=helpInfo['reloadextensions']['usage'])
     @commands.check(is_owner)
     async def reloadextensions(self, ctx):
-        loaded_extensions = ["cogs.JoinLeave",
-                             "cogs.FM",
-                             "cogs.Staff",
-                             "cogs.CreditsScore",
-                             "cogs.Tags",
-                             "cogs.Reminders",
-                             "cogs.Gold",
-                             "cogs.Fun"]
-
-        for extension in loaded_extensions:
+        for extension in startup_extensions:
             bot.reload_extension(extension)
 
         await ctx.send("Extensions reloaded!")
 
-    @commands.command(brief=helpInfo['update']['brief'], usage=helpInfo['update']['usage'], alias="updatebots")
+    @commands.command(brief=helpInfo['update']['brief'], usage=helpInfo['update']['usage'])
     @commands.check(is_owner)
     async def update(self, ctx):
         await ctx.send("Updating Bot")
         system('/bots/sacarver/bashscripts/update.sh')
         await asyncio.sleep(10)
-        loaded_extensions = ["cogs.JoinLeave",
-                             "cogs.FM",
-                             "cogs.Staff",
-                             "cogs.CreditsScore",
-                             "cogs.Tags",
-                             "cogs.Reminders",
-                             "cogs.Gold",
-                             "cogs.Fun"]
-
-        for extension in loaded_extensions:
+        for extension in startup_extensions:
             bot.reload_extension(extension)
 
         await ctx.send("Extensions Updated")
@@ -168,9 +157,25 @@ async def minutetasks():
 @bot.listen()
 async def on_command_error(ctx, error):
     if isinstance(error, commands.MissingRequiredArgument):
-        await ctx.send(f"Hey! You forgot to specify {error.param}")
+        message = ctx.message.content[1:]
+        cmdIndex = message.find(" ")
+        if cmdIndex != -1:
+            usedCommand = message[:cmdIndex]
+        else:
+            usedCommand = message
+        foundCommand = None
+        highestRatio = 0.0
+        for command in bot.commands:
+            commandName = command.name
+            comparison = SequenceMatcher(None, usedCommand, commandName)
+            if comparison.ratio() > highestRatio:
+                highestRatio = comparison.ratio()
+                foundCommand = command
+        await ctx.send(f"Hmm! You forgot to specify {error.param}\n ```Usage: !{foundCommand.name} {foundCommand.usage}```")
     elif isinstance(error, commands.ExtensionNotLoaded):
         await ctx.send(f"Uhoh! The {error.name} extension is not loaded! Please contact x2110311x")
+    elif isinstance(error, commands.CheckFailure):
+        await ctx.send("You do not have permission to use this command!")
     elif isinstance(error, commands.CommandNotFound):
         message = ctx.message.content[1:]
         cmdIndex = message.find(" ")

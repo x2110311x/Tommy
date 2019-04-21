@@ -72,16 +72,20 @@ class FM(commands.Cog, name="FM Commands"):
                 else:
                     imageurl = current_track.get_cover_image(2)
 
+                    album = str(current_track.get_album())
+                    trackName = str(current_track.get_correction())
+                    artistName = str(current_track.artist.get_name())
+
                     embedFM = discord.Embed(title="Now Playing", colour=0x753543)
                     embedFM.set_author(
                         name=username[0], icon_url=ctx.author.avatar_url)
                     embedFM.set_image(url=imageurl)
                     embedFM.add_field(
-                        name="Album", value=current_track.get_album(), inline=True)
+                        name="Album", value=album, inline=True)
                     embedFM.add_field(
-                        name="Song", value=current_track.title, inline=True)
+                        name="Song", value=trackName, inline=True)
                     embedFM.add_field(
-                        name="Artist", value=current_track.artist, inline=False)
+                        name="Artist", value=artistName, inline=False)
                 await ctx.send(embed=embedFM)
             except Exception as e:
                 await ctx.send("Uh Oh! I couldn't get your status")
@@ -92,3 +96,7 @@ class FM(commands.Cog, name="FM Commands"):
 
 def setup(bot):
     bot.add_cog(FM(bot))
+
+
+def teardown(bot):
+    DB.close()

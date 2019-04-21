@@ -61,3 +61,7 @@ class Reminders(commands.Cog, name="Reminder Commands"):
 
 def setup(bot):
     bot.add_cog(Reminders(bot))
+
+
+def teardown(bot):
+    DB.close()

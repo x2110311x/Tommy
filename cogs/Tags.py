@@ -172,3 +172,7 @@ class Tags(commands.Cog, name="Tag Commands"):
 
 def setup(bot):
     bot.add_cog(Tags(bot))
+
+
+def teardown(bot):
+    DB.close()

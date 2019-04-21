@@ -27,7 +27,7 @@ class Gold(commands.Cog, name="Gilding"):
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
-        if reaction.emoji.id == 569243418681933834:
+        if reaction.emoji.id == 569642972262432784:
             message = reaction.message
             if user != message.author:
                 creditsSelect = f"SELECT Credits FROM Credits WHERE User ={user.id}"
@@ -64,8 +64,10 @@ class Gold(commands.Cog, name="Gilding"):
                                 name="In Channel", value=message.channel.name, inline=False)
                             embedGold.add_field(name="Given by", value=user.name, inline=False)
                             goldChannel = self.bot.get_channel(config['gold_Channel'])
-                            await goldChannel.send(embed=embedGold)
+                            goldMsg = await goldChannel.send(embed=embedGold)
                             DBConn.commit()
+                            await goldMsg.add_reaction("⬆")
+                            await goldMsg.add_reaction("⬇")
 
                         except SaidNoError:
                             await user.send("Giving Gold cancelled!")
@@ -90,3 +92,7 @@ class Gold(commands.Cog, name="Gilding"):
 
 def setup(bot):
     bot.add_cog(Gold(bot))
+
+
+def teardown(bot):
+    DB.close()
