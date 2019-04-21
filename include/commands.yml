@@ -3,28 +3,97 @@
 # file for Tommy bot help command
 #***********************************
 
-staff:
+Staff:
   say:
-    name: 'say'
-    description: 'Say something using the bot'
-    usage: '`!say [#channel] <text>` \n Mention a channel to say in that channel. Omit it to say in the current channel'
+    brief: "Say something using the bot"
+    usage: "[#channel] <text> \n Mention a channel to say in that channel. Omit it to say in the current channel"
   ban:
-    name: 'ban'
-    description: 'Ban a user'
-    usage: '`!ban <user>` Make sure to @ the user'
+    brief: "Ban a user"
+    usage: "<user> \nMake sure to @ the user"
   kick:
-    name: 'kick'
-    description: 'Kick a user'
-    usage: '`!kick <user>` Make sure to @ the user'
+    brief: "Kick a user"
+    usage: "<user> \nMake sure to @ the user"
   warn:
-    name: 'warn'
-    description: 'warn a user'
-    usage: '`!warn <user> <reason>` Make sure to @ the user'
-chkwarn:
-    name: 'chkwarn'
-    description: 'Check a users warns'
-    usage: '`!chkwarn <user>` Make sure to @ the user'
+    brief: "Warn a user"
+    usage: "<user> <reason> \nMake sure to @ the user"
+  chkwarn:
+    brief: "Check a users warns"
+    usage: "<user> \nMake sure to @ the user"
   mute:
-    name: 'mute'
-    description: 'mute a user'
-    usage: '`!mute <user> <time>` Make sure to @ the user'
+    brief: "Mute a user"
+    usage: "<user> [time] \nMake sure to @ the user. Time will be 5 minutes if not specified "
+  unmute:
+    brief: "Unmute a user"
+    usage: "<user> \nMake sure to @ the user"
+
+Fun:
+  rate:
+    brief: "Have me rate something out of 10"
+    usage: "<object>"
+  magic8ball:
+    brief: "\nJust a magic 8 ball"
+    usage: ""
+
+CreditsScore:
+  daily:
+    brief: "Get your daily credits"
+    usage: "\nCan only be used once every 24 hours"
+  score:
+    brief: "Check your or someone else's score"
+    usage: "[user] \n@ another user to check their score. Omit a user to check your own"
+  donate:
+    brief: "Donate credits to another user"
+    usage: "<user> <amount> \nMake sure to @ the user. Maximum of 1000 credits at a time"
+  alltop:
+    brief: "Check the all-time leaderboard"
+    usage: " [page] \nIf page is omited, it will show the first page"
+  top:
+    brief: "Check the monthly leaderboard"
+    usage: "[page] \nIf page is omited, it will show the first page"
+
+Tags:
+  createtag:
+    brief: "Create a tag"
+    usage: "<name> <content> \nCosts 1000 credits"
+  tag:
+    brief: "Use a tag"
+    usage: "<name> \nIt is case-sensitive"
+  deletetag:
+    brief: "Delete one of your own tags"
+    usage: "<name> \nYou must have created the tag"
+  edittag:
+    brief: "Edit one of your own tags"
+    usage: "<name> \nYou must have created the tag"
+  mytags:
+    brief: "See the names of all of your tags"
+    usage: ""
+
+FM:
+  setfm:
+    brief: "Set or update your LastFM username"
+    usage: "<username>"
+  fm:
+    brief: "Check your LastFM Status"
+    usage: "\nBuggy currently. Some songs randomly break it"
+
+Reminders:
+  remind:
+    brief: "Set a reminder for yourself"
+    usage: "<minutes> <reason> \nMust be an integer for minutes"
+  myreminders:
+    brief: "View your upcoming reminders"
+    usage: ""
+
+Utilities:
+  ping:
+    brief: "Check if the bot is working"
+    usage: ""
+  uptime:
+    brief: "Check the bot uptime"
+    usage: ""
+  epoch:
+    brief: "Returns the current time in epoch format"
+    usage: ""
+  reloadextensions:
+    brief: "[X2] Reload Bot Extensions"
+    usage: "Only x2 can do this"
