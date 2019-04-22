@@ -128,7 +128,7 @@ class Staff(commands.Cog, name="Staff Commands"):
             embedWarn.set_footer(text=f"# of warns: {warnCount}")
             for x in range(0, warnCount):
                 date = datetime.fromtimestamp(warns[x][1]).strftime(
-                    "%m/%d/%Y, %H:%M:%S") + " EST"
+                    "%m/%d/%Y, %H:%M:%S") + " GMT"
                 embedWarn.add_field(
                     name=f"{x+1}. {warns[x][0]}", value=date, inline=False)
         await ctx.send(embed=embedWarn)
@@ -147,8 +147,8 @@ class Staff(commands.Cog, name="Staff Commands"):
         DB.execute(selectDailies)
         dailyUses = DB.fetchone()[0]
         warnCount = warns
-        joinDate = user.joined_at.strftime("%m/%d/%Y, %H:%M:%S") + " EST"
-        createdDate = user.created_at.strftime("%m/%d/%Y, %H:%M:%S") + " EST"
+        joinDate = user.joined_at.strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
+        createdDate = user.created_at.strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
         userRoles = user.roles
         rolestr = ""
         for role in userRoles:
@@ -173,7 +173,7 @@ class Staff(commands.Cog, name="Staff Commands"):
         for user in ctx.message.channel.guild.members:
             if role in user.roles:
                 usersWithRole += 1
-        createdDate = role.created_at.strftime("%m/%d/%Y, %H:%M:%S") + " EST"
+        createdDate = role.created_at.strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
         embedRole = discord.Embed(colour=0x753543)
         embedRole.set_author(name=role.name)
         embedRole.add_field(name="Role ID", value=role.id, inline=False)

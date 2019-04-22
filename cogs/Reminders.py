@@ -51,7 +51,7 @@ class Reminders(commands.Cog, name="Reminder Commands"):
             remindString = "Your reminders: \n```\n"
             for remind in reminds:
                 reason = remind[0]
-                date = datetime.fromtimestamp(remind[1]).strftime("%m/%d/%Y, %H:%M:%S") + " EST"
+                date = datetime.fromtimestamp(remind[1]).strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
                 remindString += f"{reason}  at {date} \n"
             remindString += "```"
             await ctx.send(remindString)

@@ -37,7 +37,7 @@ class AuditLogs(commands.Cog, name="Audits"):
             embedSlur.set_author(name=message.author.name, icon_url=message.author.avatar_url)
             embedSlur.add_field(name="Slur Used!", value=slursUsedStr, inline=False)
             embedSlur.add_field(name="In Channel", value=message.channel.name, inline=False)
-            dateCreated = message.created_at.strftime("%m/%d/%Y, %H:%M:%S") + " EST"
+            dateCreated = message.created_at.strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
             embedSlur.add_field(name="Message Created At", value=dateCreated, inline=False)
             embedSlur.set_footer(text=f"© x2110311x. Original message ID: {message.id} User ID: {message.author.id}")
 
@@ -50,9 +50,9 @@ class AuditLogs(commands.Cog, name="Audits"):
         embedDelete.set_author(name=message.author.name, icon_url=message.author.avatar_url)
         embedDelete.add_field(name="Message deleted!", value=message.content, inline=False)
         embedDelete.add_field(name="In Channel", value=message.channel.name, inline=False)
-        dateCreated = message.created_at.strftime("%m/%d/%Y, %H:%M:%S") + " EST"
+        dateCreated = message.created_at.strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
         embedDelete.add_field(name="Message Created At", value=dateCreated, inline=False)
-        dateDeleted = datetime.fromtimestamp(int(time.time())).strftime("%m/%d/%Y, %H:%M:%S") + " EST"
+        dateDeleted = datetime.fromtimestamp(int(time.time())).strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
         embedDelete.add_field(name="Message Deleted At", value=dateDeleted, inline=False)
         embedDelete.set_footer(text=f"© x2110311x. Original message ID: {message.id}")
 
@@ -67,9 +67,9 @@ class AuditLogs(commands.Cog, name="Audits"):
             embedEdit.add_field(name="Message Edited!", value=f"{after.content}", inline=False)
             embedEdit.add_field(name="Origial Message", value=f"{before.content}", inline=False)
             embedEdit.add_field(name="In Channel", value=f"{after.channel.name}", inline=False)
-            dateCreated = before.created_at.strftime("%m/%d/%Y, %H:%M:%S") + " EST"
+            dateCreated = before.created_at.strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
             embedEdit.add_field(name="Message Created At", value=f"{dateCreated}", inline=False)
-            dateEdited = datetime.fromtimestamp(int(time.time())).strftime("%m/%d/%Y, %H:%M:%S") + " EST"
+            dateEdited = datetime.fromtimestamp(int(time.time())).strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
             embedEdit.add_field(name="Message edited At", value=f"{dateEdited}", inline=False)
             embedEdit.set_footer(text=f"© x2110311x. Original message ID: {after.id}")
 
@@ -83,9 +83,9 @@ class AuditLogs(commands.Cog, name="Audits"):
         emebdJoin = discord.Embed(colour=0x753543)
         emebdJoin.set_author(name=member.name, icon_url=member.avatar_url)
         emebdJoin.add_field(name="User Joined!", value=f"User ID {member.id}", inline=False)
-        dateJoined = member.joined_at.strftime("%m/%d/%Y, %H:%M:%S") + " EST"
+        dateJoined = member.joined_at.strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
         emebdJoin.add_field(name="Joined At", value=dateJoined, inline=False)
-        dateCreated = member.created_at.strftime("%m/%d/%Y, %H:%M:%S") + " EST"
+        dateCreated = member.created_at.strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
         emebdJoin.add_field(name="User Account Created At", value=dateCreated, inline=False)
         emebdJoin.set_footer(text=f"© x2110311x. User ID {member.id}")
 
@@ -97,7 +97,7 @@ class AuditLogs(commands.Cog, name="Audits"):
         embedLeave = discord.Embed(colour=0x753543)
         embedLeave.set_author(name=member.name, icon_url=member.avatar_url)
         embedLeave.add_field(name="User Left!", value=f"User ID {member.id}", inline=False)
-        dateLeft = datetime.fromtimestamp(int(time.time())).strftime("%m/%d/%Y, %H:%M:%S") + " EST"
+        dateLeft = datetime.fromtimestamp(int(time.time())).strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
         embedLeave.add_field(name="Left At", value=dateLeft, inline=False)
         embedLeave.set_footer(text=f"© x2110311x. User ID {member.id}")
 
@@ -109,7 +109,7 @@ class AuditLogs(commands.Cog, name="Audits"):
         embedBan = discord.Embed(colour=0x753543)
         embedBan.set_author(name=user.name, icon_url=user.avatar_url)
         embedBan.add_field(name="User Banned!", value=f"User ID {user.id}", inline=False)
-        dateBan = datetime.fromtimestamp(int(time.time())).strftime("%m/%d/%Y, %H:%M:%S") + " EST"
+        dateBan = datetime.fromtimestamp(int(time.time())).strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
         embedBan.add_field(name="Banned At", value=dateBan, inline=False)
         embedBan.set_footer(text=f"© x2110311x. ")
 
@@ -121,7 +121,7 @@ class AuditLogs(commands.Cog, name="Audits"):
         embedUnban = discord.Embed(colour=0x753543)
         embedUnban.set_author(name=user.name, icon_url=user.avatar_url)
         embedUnban.add_field(name="User Unbanned!", value=f"User ID {user.id}", inline=False)
-        dateUnban = datetime.fromtimestamp(int(time.time())).strftime("%m/%d/%Y, %H:%M:%S") + " EST"
+        dateUnban = datetime.fromtimestamp(int(time.time())).strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
         embedUnban.add_field(name="Unbanned At", value=dateUnban, inline=False)
         embedUnban.set_footer(text=f"© x2110311x. User ID {user.id}")
 
