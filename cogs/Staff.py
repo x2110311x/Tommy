@@ -93,8 +93,8 @@ class Staff(commands.Cog, name="Staff Commands"):
             except ValueError:
                 await ctx.send("Please use integers")
             try:
-                muteInsert = f"INSERT INTO Bans (User, UnbanTime) VALUES ({user.id}, {timeToUnban})"
-                DB.execute(muteInsert)
+                banInsert = f"INSERT INTO TempBans (User, UnbanTime) VALUES ({user.id}, {timeToUnban})"
+                DB.execute(banInsert)
                 DBConn.commit()
                 await user.send(f"You have been temporaily banned for `{banHours} hours`")
                 await ctx.send("User has been banned temporarily")
