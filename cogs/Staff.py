@@ -82,6 +82,28 @@ class Staff(commands.Cog, name="Staff Commands"):
         else:
             await ctx.send("You cannot mute another staff member!")
 
+    @commands.command(brief=helpInfo['tempban']['brief'], usage=helpInfo['tempban']['usage'])
+    @commands.has_role(config['staff_Role'])
+    async def tempban(self, ctx, user: discord.Member, banHours=24):
+        guild = self.bot.get_guild(config['server_ID'])
+        staffRole = guild.get_role(config['staff_Role'])
+        if staffRole not in user.roles:
+            try:
+                timeToUnban = int(banHours) * 3600 + int(time.time())
+            except ValueError:
+                await ctx.send("Please use integers")
+            try:
+                muteInsert = f"INSERT INTO Bans (User, UnbanTime) VALUES ({user.id}, {timeToUnban})"
+                DB.execute(muteInsert)
+                DBConn.commit()
+                await user.send(f"You have been temporaily banned for `{banHours} hours`")
+                await ctx.send("User has been banned temporarily")
+            except Exception as e:
+                await ctx.send("Unable to ban user")
+                print(e)
+        else:
+            await ctx.send("You cannot ban another staff member!")
+
     @commands.command(brief=helpInfo['warn']['brief'], usage=helpInfo['warn']['usage'])
     @commands.has_role(config['staff_Role'])
     async def warn(self, ctx, user: discord.Member, *, reason):

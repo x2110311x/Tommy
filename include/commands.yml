@@ -16,9 +16,12 @@ Staff:
   warn:
     brief: "Warn a user"
     usage: "<user> <reason> \nMake sure to @ the user"
+  tempban:
+    brief: "Temporarily Ban a user"
+    usage: "<user> <time> \nMake sure to @ the user"
   chkwarn:
     brief: "Check a users warns"
-    usage: "<user> \nMake sure to @ the user"
+    usage: "<user> [time] \nMake sure to @ the user. Time will be 24 hours if not specified "
   mute:
     brief: "Mute a user"
     usage: "<user> [time] \nMake sure to @ the user. Time will be 5 minutes if not specified "
