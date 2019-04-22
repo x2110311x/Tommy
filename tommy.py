@@ -125,35 +125,35 @@ async def minutetasks():
         DB.execute(muteSelect)
         unmutes = DB.fetchall()
         if len(unmutes) > 0:
-            for user in unmutes:
+            for userToUnmute in unmutes:
                 try:
                     guild = bot.get_guild(config['server_ID'])
                     muteRole = guild.get_role(config['mute_Role'])
                     defaultRole = guild.get_role(config['join_Role'])
-                    user = guild.get_member(user[0])
+                    user = guild.get_member(userToUnmute[0])
                     await user.remove_roles(muteRole)
                     await user.add_roles(defaultRole)
                     await user.send("You have been unmuted")
                     deleteMute = f"DELETE FROM Mutes WHERE User ={user.id}"
                     DB.execute(deleteMute)
                 except AttributeError:
-                    print(f"Unable to unmute user: {user.id}")
+                    print(f"Unable to unmute user: {userToUnmute[0]}")
 
         # unban #
         banSelect = f"SELECT User FROM TempBans WHERE UnbanTime <= {curTime}"
         DB.execute(banSelect)
         unbans = DB.fetchall()
         if len(unbans) > 0:
-            for user in unbans:
+            for userToUnban in unbans:
                 try:
                     guild = bot.get_guild(config['server_ID'])
-                    user = bot.get_user(user[0])
+                    user = bot.get_user(userToUnban[0])
                     await guild.unban(user, reason="Temporary Ban")
                     await user.send("You have been unbanned")
                     deleteMute = f"DELETE FROM TempBans WHERE User ={user.id}"
                     DB.execute(deleteMute)
                 except AttributeError:
-                    print(f"Unable to unban user: {user.id}")
+                    print(f"Unable to unban user: {userToUnban}")
 
         # Reminders #
         remindSelect = f"SELECT User, Reminder FROM Reminders WHERE date <= {curTime}"
@@ -168,7 +168,7 @@ async def minutetasks():
                     deleteReminder = f"DELETE FROM Reminders WHERE User = {user.id} AND Reminder = '{reason}' AND Date < {curTime}"
                     DB.execute(deleteReminder)
                 except AttributeError:
-                    print(f"Unable to remind user: {user.id}")
+                    print(f"Unable to remind user: {remind[0]}")
         DBConn.commit()
 
 
@@ -231,10 +231,10 @@ async def on_ready():
     # Message Testing Channel #
     chanTest = bot.get_channel(config['testing_Channel'])
     await chanTest.send("Bot has started")
-    await minutetasks()
 
     # Update Status #
     guild = bot.get_guild(config['server_ID'])
     await bot.change_presence(status=discord.Status.online, activity=discord.Game(f"with {guild.member_count} members"))
+    await minutetasks()
 
 bot.run(config['token'], bot=True, Reconnect=True)
