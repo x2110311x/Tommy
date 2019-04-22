@@ -208,6 +208,13 @@ class Staff(commands.Cog, name="Staff Commands"):
 
         await ctx.send(embed=embedRole)
 
+        @commands.command(brief=helpInfo['resetstatus']['brief'], usage=helpInfo['resetstatus']['usage'])
+        @commands.has_role(config['staff_Role'])
+        async def resetstatus(self, ctx):
+            guild = ctx.message.channel.guild
+            await ctx.send("Resetting status")
+            await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(f"with {guild.member_count} members"))
+
 
 def setup(bot):
     bot.add_cog(Staff(bot))

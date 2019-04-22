@@ -34,6 +34,9 @@ Staff:
   roleinfo:
     brief: "Get information about a role"
     usage: "<role> \nName is case sensitive"
+  resetstatus:
+    brief: "Reset the bot member count status"
+    usage: ""
 
 
 Fun:

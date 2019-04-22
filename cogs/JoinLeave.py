@@ -52,9 +52,7 @@ class JoinLeave(commands.Cog):
 
         # Update Status #
 
-        await self.bot.change_presence(status=discord.Status.online,
-                                       activity=discord.Game(
-                                           f"with {guild.member_count} members"))
+        await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(f"with {guild.member_count} members"))
 
         # Join Image #
         dailyImage = Image.open(abspath("./include/images/daily.png"))

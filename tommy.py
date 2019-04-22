@@ -163,10 +163,6 @@ async def minutetasks():
             DB.execute(deleteReminder)
     DBConn.commit()
 
-    # Make sure status stays up to date #
-    guild = bot.get_guild(config['server_ID'])
-    await bot.change_presence(status=discord.Status.online, activity=discord.Game(f"with {guild.member_count} members"))
-
     # Wait 20 seconds to run again #
     await asyncio.sleep(20)
     await minutetasks()
