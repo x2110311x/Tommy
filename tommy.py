@@ -148,7 +148,9 @@ async def minutetasks():
                 try:
                     guild = bot.get_guild(config['server_ID'])
                     user = userToUnban[0]
-                    for bannedUser in guild.bans():
+                    print(user)
+                    bannedUsers = await guild.bans()
+                    for bannedUser in bannedUsers:
                         if bannedUser['user'].id == user:
                             await bannedUser.unban(bannedUser, reason="Temporary Ban")
                             await user.send("You have been unbanned")
