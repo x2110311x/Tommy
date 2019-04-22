@@ -120,52 +120,52 @@ bot.add_cog(Utilities(bot))
 
 
 async def minutetasks():
-    # Unmutes #
-    curTime = int(time.time())
-    muteSelect = f"SELECT User FROM Mutes WHERE UnmuteTime <= {curTime}"
-    DB.execute(muteSelect)
-    unmutes = DB.fetchall()
-    if len(unmutes) > 0:
-        for user in unmutes:
-            guild = bot.get_guild(config['server_ID'])
-            muteRole = guild.get_role(config['mute_Role'])
-            defaultRole = guild.get_role(config['join_Role'])
-            user = guild.get_member(user[0])
-            await user.remove_roles(muteRole)
-            await user.add_roles(defaultRole)
-            await user.send("You have been unmuted")
-            deleteMute = f"DELETE FROM Mutes WHERE User ={user.id}"
-            DB.execute(deleteMute)
+    while bot.is_ready():
+        # Unmutes #
+        curTime = int(time.time())
+        muteSelect = f"SELECT User FROM Mutes WHERE UnmuteTime <= {curTime}"
+        DB.execute(muteSelect)
+        unmutes = DB.fetchall()
+        if len(unmutes) > 0:
+            for user in unmutes:
+                guild = bot.get_guild(config['server_ID'])
+                muteRole = guild.get_role(config['mute_Role'])
+                defaultRole = guild.get_role(config['join_Role'])
+                user = guild.get_member(user[0])
+                await user.remove_roles(muteRole)
+                await user.add_roles(defaultRole)
+                await user.send("You have been unmuted")
+                deleteMute = f"DELETE FROM Mutes WHERE User ={user.id}"
+                DB.execute(deleteMute)
 
-    # unban #
-    banSelect = f"SELECT User FROM TempBans WHERE UnbanTime <= {curTime}"
-    DB.execute(banSelect)
-    unbans = DB.fetchall()
-    if len(unbans) > 0:
-        for user in unbans:
-            guild = bot.get_guild(config['server_ID'])
-            user = bot.get_user(user[0])
-            await guild.unban(user)
-            await user.send("You have been unbanned")
-            deleteMute = f"DELETE FROM TempBans WHERE User ={user.id}"
-            DB.execute(deleteMute)
+        # unban #
+        banSelect = f"SELECT User FROM TempBans WHERE UnbanTime <= {curTime}"
+        DB.execute(banSelect)
+        unbans = DB.fetchall()
+        if len(unbans) > 0:
+            for user in unbans:
+                guild = bot.get_guild(config['server_ID'])
+                user = bot.get_user(user[0])
+                await guild.unban(user)
+                await user.send("You have been unbanned")
+                deleteMute = f"DELETE FROM TempBans WHERE User ={user.id}"
+                DB.execute(deleteMute)
 
-    # Reminders #
-    remindSelect = f"SELECT User, Reminder FROM Reminders WHERE date <= {curTime}"
-    DB.execute(remindSelect)
-    reminds = DB.fetchall()
-    if len(reminds) > 0:
-        for remind in reminds:
-            user = bot.get_user(remind[0])
-            reason = remind[1]
-            await user.send(f"You are being reminded for `{reason}`")
-            deleteReminder = f"DELETE FROM Reminders WHERE User = {user.id} AND Reminder = '{reason}' AND Date < {curTime}"
-            DB.execute(deleteReminder)
-    DBConn.commit()
+        # Reminders #
+        remindSelect = f"SELECT User, Reminder FROM Reminders WHERE date <= {curTime}"
+        DB.execute(remindSelect)
+        reminds = DB.fetchall()
+        if len(reminds) > 0:
+            for remind in reminds:
+                user = bot.get_user(remind[0])
+                reason = remind[1]
+                await user.send(f"You are being reminded for `{reason}`")
+                deleteReminder = f"DELETE FROM Reminders WHERE User = {user.id} AND Reminder = '{reason}' AND Date < {curTime}"
+                DB.execute(deleteReminder)
+        DBConn.commit()
 
-    # Wait 20 seconds to run again #
-    await asyncio.sleep(20)
-    await minutetasks()
+        # Wait 20 seconds to run again #
+        await asyncio.sleep(20)
 
 
 @bot.listen()
