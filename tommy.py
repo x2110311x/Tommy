@@ -7,7 +7,6 @@
 # Include Libraries #
 import asyncio
 import discord
-import logging
 import sqlite3
 import time
 import yaml
@@ -31,12 +30,6 @@ bot = commands.Bot(command_prefix="!")
 # Database connections #
 DBConn = sqlite3.connect(abspath(config['DBFile']))
 DB = DBConn.cursor()
-
-logger = logging.getLogger('discord')
-logger.setLevel(logging.DEBUG)
-handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
-handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
-logger.addHandler(handler)
 
 startup_extensions = ["cogs.JoinLeave",
                       "cogs.FM",
