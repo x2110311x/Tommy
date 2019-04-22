@@ -40,7 +40,7 @@ class FM(commands.Cog, name="FM Commands"):
             await ctx.send("Username Set!")
         except sqlite3.IntegrityError:
             DB.execute(
-                f"UPDATE FM SET LastFMUsername={username}, LastUpdated = {int(time.time())} WHERE User={ctx.author.id}")
+                f"UPDATE FM SET LastFMUsername='{username}', LastUpdated = {int(time.time())} WHERE User={ctx.author.id}")
             await ctx.send("Username Updated!")
         DBConn.commit()
 
