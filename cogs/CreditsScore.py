@@ -140,11 +140,11 @@ class CreditsScore(commands.Cog, name="Credits, Score and Rank Commands"):
         levelDraw = ImageDraw.Draw(scoreImage)
         rankDraw = ImageDraw.Draw(scoreImage)
 
-        unameDraw.text((143, 18), userToScore.name, font=unameFnt, fill=(255, 255, 255))
+        unameDraw.text((144, 18), userToScore.name, font=unameFnt, fill=(255, 255, 255))
         unameDraw.text((16, 261), str(credits), font=unameFnt, fill=(255, 255, 255))
-        unameDraw.text((16, 340), str(pointsToNext), font=unameFnt, fill=(255, 255, 255))
-        unameDraw.text((16, 419), str(golds), font=unameFnt, fill=(255, 255, 255))
-        levelDraw.text((143, 130), str(levels), font=levelFnt, fill=(255, 255, 255))
+        unameDraw.text((16, 342), str(pointsToNext), font=unameFnt, fill=(255, 255, 255))
+        unameDraw.text((16, 428), str(golds), font=unameFnt, fill=(255, 255, 255))
+        levelDraw.text((144, 131), str(levels), font=levelFnt, fill=(255, 255, 255))
         rankDraw.text((407, 109), str(rank), font=rankFnt, fill=(255, 255, 255))
 
         imgByteArr = io.BytesIO()
