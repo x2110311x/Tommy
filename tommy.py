@@ -45,6 +45,7 @@ startup_extensions = ["cogs.JoinLeave",
 for extension in startup_extensions:
     bot.load_extension(extension)
 
+
 with open(abspath(config['help_file']), 'r') as helpFile:
     helpInfo = yaml.safe_load(helpFile)
 
@@ -53,11 +54,6 @@ helpInfo = helpInfo['Utilities']
 
 async def is_owner(ctx):
     return ctx.author.id == 207129652345438211
-
-
-@bot.check
-async def globally_block_dms(ctx):
-    return ctx.guild is not None
 
 
 class Utilities(commands.Cog, name="Utility Commands"):
@@ -121,6 +117,8 @@ bot.add_cog(Utilities(bot))
 
 async def minutetasks():
     while bot.is_ready():
+        # Wait 20 seconds to run again #
+        await asyncio.sleep(20)
         # Unmutes #
         curTime = int(time.time())
         muteSelect = f"SELECT User FROM Mutes WHERE UnmuteTime <= {curTime}"
@@ -128,15 +126,18 @@ async def minutetasks():
         unmutes = DB.fetchall()
         if len(unmutes) > 0:
             for user in unmutes:
-                guild = bot.get_guild(config['server_ID'])
-                muteRole = guild.get_role(config['mute_Role'])
-                defaultRole = guild.get_role(config['join_Role'])
-                user = guild.get_member(user[0])
-                await user.remove_roles(muteRole)
-                await user.add_roles(defaultRole)
-                await user.send("You have been unmuted")
-                deleteMute = f"DELETE FROM Mutes WHERE User ={user.id}"
-                DB.execute(deleteMute)
+                try:
+                    guild = bot.get_guild(config['server_ID'])
+                    muteRole = guild.get_role(config['mute_Role'])
+                    defaultRole = guild.get_role(config['join_Role'])
+                    user = guild.get_member(user[0])
+                    await user.remove_roles(muteRole)
+                    await user.add_roles(defaultRole)
+                    await user.send("You have been unmuted")
+                    deleteMute = f"DELETE FROM Mutes WHERE User ={user.id}"
+                    DB.execute(deleteMute)
+                except AttributeError:
+                    print(f"Unable to unmute user: {user.id}")
 
         # unban #
         banSelect = f"SELECT User FROM TempBans WHERE UnbanTime <= {curTime}"
@@ -144,12 +145,15 @@ async def minutetasks():
         unbans = DB.fetchall()
         if len(unbans) > 0:
             for user in unbans:
-                guild = bot.get_guild(config['server_ID'])
-                user = bot.get_user(user[0])
-                await guild.unban(user)
-                await user.send("You have been unbanned")
-                deleteMute = f"DELETE FROM TempBans WHERE User ={user.id}"
-                DB.execute(deleteMute)
+                try:
+                    guild = bot.get_guild(config['server_ID'])
+                    user = bot.get_user(user[0])
+                    await guild.unban(user, reason="Temporary Ban")
+                    await user.send("You have been unbanned")
+                    deleteMute = f"DELETE FROM TempBans WHERE User ={user.id}"
+                    DB.execute(deleteMute)
+                except AttributeError:
+                    print(f"Unable to unban user: {user.id}")
 
         # Reminders #
         remindSelect = f"SELECT User, Reminder FROM Reminders WHERE date <= {curTime}"
@@ -157,15 +161,15 @@ async def minutetasks():
         reminds = DB.fetchall()
         if len(reminds) > 0:
             for remind in reminds:
-                user = bot.get_user(remind[0])
-                reason = remind[1]
-                await user.send(f"You are being reminded for `{reason}`")
-                deleteReminder = f"DELETE FROM Reminders WHERE User = {user.id} AND Reminder = '{reason}' AND Date < {curTime}"
-                DB.execute(deleteReminder)
+                try:
+                    user = bot.get_user(remind[0])
+                    reason = remind[1]
+                    await user.send(f"You are being reminded for `{reason}`")
+                    deleteReminder = f"DELETE FROM Reminders WHERE User = {user.id} AND Reminder = '{reason}' AND Date < {curTime}"
+                    DB.execute(deleteReminder)
+                except AttributeError:
+                    print(f"Unable to remind user: {user.id}")
         DBConn.commit()
-
-        # Wait 20 seconds to run again #
-        await asyncio.sleep(20)
 
 
 @bot.listen()

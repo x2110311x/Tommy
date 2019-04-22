@@ -97,7 +97,7 @@ class Staff(commands.Cog, name="Staff Commands"):
                 DB.execute(banInsert)
                 DBConn.commit()
                 await user.send(f"You have been temporaily banned for `{banHours} hours`")
-                await user.ban(reason=ctx.author.name)
+                await user.ban(reason="Temporary Ban")
                 await ctx.send("User has been banned temporarily")
             except Exception as e:
                 await ctx.send("Unable to ban user")
@@ -208,12 +208,12 @@ class Staff(commands.Cog, name="Staff Commands"):
 
         await ctx.send(embed=embedRole)
 
-        @commands.command(brief=helpInfo['resetstatus']['brief'], usage=helpInfo['resetstatus']['usage'])
-        @commands.has_role(config['staff_Role'])
-        async def resetstatus(self, ctx):
-            guild = ctx.message.channel.guild
-            await ctx.send("Resetting status")
-            await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(f"with {guild.member_count} members"))
+    @commands.command(brief=helpInfo['resetstatus']['brief'], usage=helpInfo['resetstatus']['usage'])
+    @commands.has_role(config['staff_Role'])
+    async def resetstatus(self, ctx):
+        guild = ctx.message.channel.guild
+        await ctx.send("Resetting status")
+        await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(f"with {guild.member_count} members"))
 
 
 def setup(bot):
