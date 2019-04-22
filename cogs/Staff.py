@@ -127,7 +127,7 @@ class Staff(commands.Cog, name="Staff Commands"):
             warnCount = len(warns)
             embedWarn.set_footer(text=f"# of warns: {warnCount}")
             for x in range(0, warnCount):
-                date = datetime.fromtimestamp(warns[x][1]).strftime(
+                date = datetime.utcfromtimestamp(warns[x][1]).strftime(
                     "%m/%d/%Y, %H:%M:%S") + " GMT"
                 embedWarn.add_field(
                     name=f"{x+1}. {warns[x][0]}", value=date, inline=False)

@@ -107,6 +107,9 @@ Utilities:
   epoch:
     brief: "Returns the current time in epoch format"
     usage: ""
+  fromepoch:
+    brief: "Returns a datetime from specified epoch"
+    usage: "<epoch>"
   reloadextensions:
     brief: "[X2] Reload Bot Extensions"
     usage: "Only x2 can do this"

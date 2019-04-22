@@ -70,6 +70,11 @@ class Utilities(commands.Cog, name="Utility Commands"):
         intCurEpoch = int(time.time())
         await ctx.send(f"The current epoch is {intCurEpoch}")
 
+    @commands.command(brief=helpInfo['fromepoch']['brief'], usage=helpInfo['fromepoch']['usage'])
+    async def fromepoch(self, ctx, epoch: int):
+        dateTime = datetime.utcfromtimestamp(epoch).strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
+        await ctx.send(f"{epoch} is {dateTime}")
+
     @commands.command(brief=helpInfo['reloadextensions']['brief'], usage=helpInfo['reloadextensions']['usage'])
     @commands.check(is_owner)
     async def reloadextensions(self, ctx):
