@@ -52,7 +52,7 @@ class Reminders(commands.Cog, name="Reminder Commands"):
             for remind in reminds:
                 reason = remind[0]
                 date = datetime.fromtimestamp(remind[1]).strftime("%m/%d/%Y, %H:%M:%S") + " EST"
-                remindString += f"{reason}  in about {date} minutes \n"
+                remindString += f"{reason}  at {date} \n"
             remindString += "```"
             await ctx.send(remindString)
         else:
