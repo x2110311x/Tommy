@@ -82,7 +82,7 @@ class Utilities(commands.Cog, name="Utility Commands"):
     @commands.check(is_owner)
     async def update(self, ctx):
         await ctx.send("Updating Bot")
-        system('/bots/sacarver/bashscripts/update.sh')
+        system('/bot/tommy/bot/bashscripts/update.sh')
         await asyncio.sleep(10)
         for extension in startup_extensions:
             bot.reload_extension(extension)
