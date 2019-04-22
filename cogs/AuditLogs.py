@@ -75,7 +75,7 @@ class AuditLogs(commands.Cog, name="Audits"):
 
             channelDeleteLog = self.bot.get_channel(config['audit-log'])
             await channelDeleteLog.send(embed=embedEdit)
-        except exception as e:
+        except Exception as e:
             print(e)
 
     @commands.Cog.listener()
