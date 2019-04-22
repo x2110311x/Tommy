@@ -38,8 +38,11 @@ Fun:
     brief: "Have me rate something out of 10"
     usage: "<object>"
   magic8ball:
-    brief: "\nJust a magic 8 ball"
+    brief: "Just a magic 8 ball"
     usage: ""
+  yt:
+    brief: "Search for a YouTube video"
+    usage: "<search Query>"
 
 CreditsScore:
   daily:

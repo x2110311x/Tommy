@@ -3,7 +3,6 @@ import sqlite3
 import yaml
 
 from discord.ext import commands
-from include import txtutils
 from os.path import abspath
 
 with open(abspath('./include/config.yml'), 'r') as configFile:

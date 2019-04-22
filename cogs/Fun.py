@@ -2,6 +2,7 @@ import yaml
 from discord.ext import commands
 from random import randint
 from include import txtutils
+from include import utilities
 from os.path import abspath
 
 with open(abspath('./include/config.yml'), 'r') as configFile:
@@ -25,6 +26,11 @@ class Fun(commands.Cog, name="Fun Commands"):
     @commands.command(brief=helpInfo['magic8ball']['brief'], usage=helpInfo['magic8ball']['usage'])
     async def magic8ball(self, ctx):
         await ctx.send(txtutils.magic8ball())
+
+    @commands.command(brief=helpInfo['yt']['brief'], usage=helpInfo['yt']['usage'])
+    async def yt(self, ctx, *, query):
+        msgSearch = await ctx.send(F"Searching for `{query}` ")
+        await msgSearch.edit(content=utilities.ytsearch(query))
 
 
 def setup(bot):
