@@ -2,8 +2,8 @@ import sqlite3
 import time
 import yaml
 
+from datetime import datetime
 from discord.ext import commands
-from math import ceil
 from os.path import abspath
 
 # General Variables #
@@ -51,7 +51,7 @@ class Reminders(commands.Cog, name="Reminder Commands"):
             remindString = "Your reminders: \n```\n"
             for remind in reminds:
                 reason = remind[0]
-                date = ceil((remind[1] - int(time.time())) / 60)
+                date = datetime.fromtimestamp(remind[1]).strftime("%m/%d/%Y, %H:%M:%S") + " EST"
                 remindString += f"{reason}  in about {date} minutes \n"
             remindString += "```"
             await ctx.send(remindString)
