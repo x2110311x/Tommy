@@ -61,19 +61,22 @@ class AuditLogs(commands.Cog, name="Audits"):
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
-        embedEdit = discord.Embed(colour=0x753543)
-        embedEdit.set_author(name=before.author.name, icon_url=before.author.avatar_url)
-        embedEdit.add_field(name="Message Edited!", value=f"{after.content}", inline=False)
-        embedEdit.add_field(name="Origial Message", value=f"{before.content}", inline=False)
-        embedEdit.add_field(name="In Channel", value=f"{after.channel.name}", inline=False)
-        dateCreated = before.created_at.strftime("%m/%d/%Y, %H:%M:%S") + " EST"
-        embedEdit.add_field(name="Message Created At", value=f"{dateCreated}", inline=False)
-        dateEdited = datetime.fromtimestamp(int(time.time())).strftime("%m/%d/%Y, %H:%M:%S") + " EST"
-        embedEdit.add_field(name="Message edited At", value=f"{dateEdited}", inline=False)
-        embedEdit.set_footer(text=f"© x2110311x. Original message ID: {after.id}")
+        try:
+            embedEdit = discord.Embed(colour=0x753543)
+            embedEdit.set_author(name=before.author.name, icon_url=before.author.avatar_url)
+            embedEdit.add_field(name="Message Edited!", value=f"{after.content}", inline=False)
+            embedEdit.add_field(name="Origial Message", value=f"{before.content}", inline=False)
+            embedEdit.add_field(name="In Channel", value=f"{after.channel.name}", inline=False)
+            dateCreated = before.created_at.strftime("%m/%d/%Y, %H:%M:%S") + " EST"
+            embedEdit.add_field(name="Message Created At", value=f"{dateCreated}", inline=False)
+            dateEdited = datetime.fromtimestamp(int(time.time())).strftime("%m/%d/%Y, %H:%M:%S") + " EST"
+            embedEdit.add_field(name="Message edited At", value=f"{dateEdited}", inline=False)
+            embedEdit.set_footer(text=f"© x2110311x. Original message ID: {after.id}")
 
-        channelDeleteLog = self.bot.get_channel(config['audit-log'])
-        await channelDeleteLog.send(embed=embedEdit)
+            channelDeleteLog = self.bot.get_channel(config['audit-log'])
+            await channelDeleteLog.send(embed=embedEdit)
+        except exception as e:
+            print(e)
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
