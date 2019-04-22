@@ -147,11 +147,13 @@ async def minutetasks():
             for userToUnban in unbans:
                 try:
                     guild = bot.get_guild(config['server_ID'])
-                    user = bot.get_user(userToUnban[0])
-                    await guild.unban(user, reason="Temporary Ban")
-                    await user.send("You have been unbanned")
-                    deleteMute = f"DELETE FROM TempBans WHERE User ={user.id}"
-                    DB.execute(deleteMute)
+                    user = userToUnban[0]
+                    for bannedUser in guild.bans():
+                        if bannedUser['user'].id == user:
+                            await bannedUser.unban(bannedUser, reason="Temporary Ban")
+                            await user.send("You have been unbanned")
+                            deleteMute = f"DELETE FROM TempBans WHERE User ={user.id}"
+                            DB.execute(deleteMute)
                 except AttributeError:
                     print(f"Unable to unban user: {userToUnban}")
 
