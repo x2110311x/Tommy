@@ -64,7 +64,7 @@ class JoinLeave(commands.Cog):
 
         unameFnt = ImageFont.truetype(abspath("./include/fonts/calibri.ttf"), 60)
         unameDraw = ImageDraw.Draw(dailyImage)
-        unameDraw.text((176, 18), f"{member.name}", font=unameFnt, fill=(255, 255, 255))
+        unameDraw.text((176, 18), f"{member.name}", font=unameFnt, fill=(0, 0, 0))
         unameDraw.text((176, 94), "Joined the server!", font=unameFnt, fill=(0, 0, 0))
 
         imgByteArr = io.BytesIO()

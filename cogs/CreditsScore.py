@@ -62,7 +62,7 @@ class CreditsScore(commands.Cog, name="Credits, Score and Rank Commands"):
 
                 unameFnt = ImageFont.truetype(abspath("./include/fonts/calibri.ttf"), 60)
                 unameDraw = ImageDraw.Draw(dailyImage)
-                unameDraw.text((176, 18), f"{author.name}", font=unameFnt, fill=(255, 255, 255))
+                unameDraw.text((176, 18), f"{author.name}", font=unameFnt, fill=(0, 0, 0))
                 unameDraw.text((176, 94), "Got 200 Credits", font=unameFnt, fill=(0, 0, 0))
 
                 imgByteArr = io.BytesIO()
@@ -140,12 +140,12 @@ class CreditsScore(commands.Cog, name="Credits, Score and Rank Commands"):
         levelDraw = ImageDraw.Draw(scoreImage)
         rankDraw = ImageDraw.Draw(scoreImage)
 
-        unameDraw.text((167, 18), userToScore.name, font=unameFnt, fill=(255, 255, 255))
-        unameDraw.text((16, 261), str(credits), font=unameFnt, fill=(255, 255, 255))
-        unameDraw.text((16, 342), str(pointsToNext), font=unameFnt, fill=(255, 255, 255))
-        unameDraw.text((16, 428), str(golds), font=unameFnt, fill=(255, 255, 255))
-        levelDraw.text((144, 131), str(levels), font=levelFnt, fill=(255, 255, 255))
-        rankDraw.text((407, 109), str(rank), font=rankFnt, fill=(255, 255, 255))
+        unameDraw.text((167, 18), userToScore.name, font=unameFnt, fill=(0, 0, 0))
+        unameDraw.text((16, 261), str(credits), font=unameFnt, fill=(0, 0, 0))
+        unameDraw.text((16, 342), str(pointsToNext), font=unameFnt, fill=(0, 0, 0))
+        unameDraw.text((16, 428), str(golds), font=unameFnt, fill=(0, 0, 0))
+        levelDraw.text((144, 131), str(levels), font=levelFnt, fill=(0, 0, 0))
+        rankDraw.text((407, 109), str(rank), font=rankFnt, fill=(0, 0, 0))
 
         imgByteArr = io.BytesIO()
         scoreImage.save(imgByteArr, format='PNG')
