@@ -138,6 +138,19 @@ async def minutetasks():
             deleteMute = f"DELETE FROM Mutes WHERE User ={user.id}"
             DB.execute(deleteMute)
 
+    # unban #
+    banSelect = f"SELECT User FROM TempBans WHERE UnbanTime <= {curTime}"
+    DB.execute(banSelect)
+    unbans = DB.fetchall()
+    if len(unbans) > 0:
+        for user in unbans:
+            guild = bot.get_guild(config['server_ID'])
+            user = bot.get_user(user[0])
+            await guild.unban(user)
+            await user.send("You have been unbanned")
+            deleteMute = f"DELETE FROM TempBans WHERE User ={user.id}"
+            DB.execute(deleteMute)
+
     # Reminders #
     remindSelect = f"SELECT User, Reminder FROM Reminders WHERE date <= {curTime}"
     DB.execute(remindSelect)

@@ -97,6 +97,7 @@ class Staff(commands.Cog, name="Staff Commands"):
                 DB.execute(banInsert)
                 DBConn.commit()
                 await user.send(f"You have been temporaily banned for `{banHours} hours`")
+                await user.ban(reason=ctx.author.name)
                 await ctx.send("User has been banned temporarily")
             except Exception as e:
                 await ctx.send("Unable to ban user")
