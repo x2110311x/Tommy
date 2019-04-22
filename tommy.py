@@ -7,6 +7,7 @@
 # Include Libraries #
 import asyncio
 import discord
+import logging
 import sqlite3
 import time
 import yaml
@@ -31,6 +32,11 @@ bot = commands.Bot(command_prefix="!")
 DBConn = sqlite3.connect(abspath(config['DBFile']))
 DB = DBConn.cursor()
 
+logger = logging.getLogger('discord')
+logger.setLevel(logging.DEBUG)
+handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+logger.addHandler(handler)
 
 startup_extensions = ["cogs.JoinLeave",
                       "cogs.FM",
@@ -89,11 +95,11 @@ class Utilities(commands.Cog, name="Utility Commands"):
     async def update(self, ctx):
         await ctx.send("Updating Bot")
         system('/bot/tommy/bot/bashscripts/update.sh')
-        await asyncio.sleep(10)
-        for extension in startup_extensions:
-            bot.reload_extension(extension)
-
-        await ctx.send("Extensions Updated")
+        await asyncio.sleep(30)
+        await ctx.send("Restarting Bot")
+        await bot.close()
+        DB.close()
+        system('systemctl restart tommy')
 
     @commands.command(brief=helpInfo['update']['brief'], usage=helpInfo['update']['usage'])
     @commands.check(is_owner)
@@ -101,7 +107,7 @@ class Utilities(commands.Cog, name="Utility Commands"):
         await ctx.send("Restarting Bot")
         await bot.close()
         DB.close()
-        system('reboot')
+        system('systemctl restart tommy')
 
     @commands.command(brief=helpInfo['ping']['brief'], usage=helpInfo['ping']['usage'])
     async def ping(self, ctx):
