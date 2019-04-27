@@ -1,14 +1,11 @@
 import discord
-import io
 import json
-import pylast
 import requests
 import sqlite3
 import time
 import yaml
 import urllib.parse
 
-from PIL import Image
 from discord.ext import commands
 from os.path import abspath
 
@@ -25,10 +22,6 @@ helpInfo = helpInfo['FM']
 # Database connections #
 DBConn = sqlite3.connect(abspath(config['DBFile']))
 DB = DBConn.cursor()
-
-password_hash = pylast.md5(config['FM_Pass'])
-lastfm = pylast.LastFMNetwork(api_key=config['FM_API_Key'], api_secret=config['FM_API_Secret'],
-                              username=config['FM_User'], password_hash=password_hash)
 
 setfmInsert = "INSERT INTO FM (User, LastFMUsername, LastUpdated) VALUES (?,?,?)"
 
