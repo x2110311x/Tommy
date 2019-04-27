@@ -6,24 +6,11 @@ import requests
 import sqlite3
 import time
 import yaml
+import urllib.parse
 
 from PIL import Image
 from discord.ext import commands
 from os.path import abspath
-
-
-def most_frequent_colour(image):
-
-    w, h = image.size
-    pixels = image.getcolors(w * h)
-
-    most_frequent_pixel = pixels[0]
-
-    for count, colour in pixels:
-        if count > most_frequent_pixel[0]:
-            most_frequent_pixel = (count, colour)
-
-    return most_frequent_pixel[1]
 
 
 # General Variables #
@@ -79,19 +66,26 @@ class FM(commands.Cog, name="FM Commands"):
                     artist = trackData['artist']['#text']
                     album = trackData['album']['#text']
                     trackName = trackData['name']
-                    imageURL = trackData['image'][1]['#text']
+                    try:
+                        imageURL = trackData['image'][1]['#text']
+                        if imageURL.find("http") == -1:
+                            artistEncoded = urllib.parse.quote(artist)
+                            albumEncoded = urllib.parse.quote(album)
+                            album_api_url = f"http://ws.audioscrobbler.com/2.0/?method=album.getinfo&api_key={config['FM_API_Key']}&artist={artistEncoded}&album={albumEncoded}&format=json"
+                            albumResponse = requests.get(album_api_url)
+                            albumData = json.loads(albumResponse.text)
+                            imageURL = albumData['image'][1]['#text']
+                    except KeyError:
+                        imageURL = "http://x2110311x.me/blankalbum.png"
                     try:
                         nowPlaying = bool(trackData['@attr']['nowplaying'])
                     except KeyError:
                         nowPlaying = False
-                    image = Image.open(io.BytesIO(requests.get(imageURL).content))
-                    (r, g, b) = most_frequent_colour(image)
-                    colorCode = discord.Colour.from_rgb(r, g, b)
 
                     if nowPlaying:
-                        embedFM = discord.Embed(title="Now Playing", colour=colorCode)
+                        embedFM = discord.Embed(title="Now Playing", colour=0x753543)
                     else:
-                        embedFM = discord.Embed(title="Last Played", colour=colorCode)
+                        embedFM = discord.Embed(title="Last Played", colour=0x753543)
                     embedFM.set_author(name=username[0], icon_url=ctx.author.avatar_url)
                     embedFM.add_field(name="Song", value=trackName, inline=True)
                     embedFM.add_field(name="Artist", value=artist, inline=True)
