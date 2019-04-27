@@ -1,11 +1,29 @@
 import discord
+import io
+import json
 import pylast
+import requests
 import sqlite3
-import yaml
 import time
+import yaml
 
+from PIL import Image
 from discord.ext import commands
 from os.path import abspath
+
+
+def most_frequent_colour(image):
+
+    w, h = image.size
+    pixels = image.getcolors(w * h)
+
+    most_frequent_pixel = pixels[0]
+
+    for count, colour in pixels:
+        if count > most_frequent_pixel[0]:
+            most_frequent_pixel = (count, colour)
+
+    return most_frequent_pixel[1]
 
 
 # General Variables #
@@ -51,41 +69,34 @@ class FM(commands.Cog, name="FM Commands"):
         username = DB.fetchone()
         if username is not None:
             try:
-                user = lastfm.get_user(username[0])
-                current_track = user.get_now_playing()
-
-                if current_track is None:
-                    current_track = user.get_recent_tracks(limit=1)[0]
-                    track = str(current_track.track)
-                    album = current_track.album
-                    artist = track[0:track.find('-') - 1]
-                    track = track[track.find('-') + 2:]
-
-                    embedFM = discord.Embed(title="Last Played", colour=0x753543)
-                    embedFM.set_author(
-                        name=username[0], icon_url=ctx.author.avatar_url)
-                    embedFM.add_field(
-                        name="Album", value=album, inline=True)
-                    embedFM.add_field(name="Song", value=track, inline=True)
-                    embedFM.add_field(
-                        name="Artist", value=artist, inline=False)
+                api_url = f"http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user={username[0]}&api_key={config['FM_API_Key']}&format=json"
+                fmreponse = requests.get(api_url)
+                if fmreponse.status_code != 200:
+                    raise ValueError(f"Could not get status. Reponse code: {fmreponse.status_code}")
                 else:
-                    imageurl = current_track.get_cover_image(2)
+                    fmData = json.loads(fmreponse.text)
+                    trackData = fmData['recenttracks']['track'][0]
+                    artist = trackData['artist']['#text']
+                    album = trackData['album']['#text']
+                    trackName = trackData['name']
+                    imageURL = trackData['image'][1]['#text']
+                    try:
+                        nowPlaying = bool(trackData['@attr']['nowplaying'])
+                    except KeyError:
+                        nowPlaying = False
+                    image = Image.open(io.BytesIO(requests.get(imageURL).content))
+                    (r, g, b) = most_frequent_colour(image)
+                    colorCode = discord.Colour.from_rgb(r, g, b)
 
-                    album = str(current_track.get_album())
-                    trackName = str(current_track.get_correction())
-                    artistName = str(current_track.artist.get_name())
-
-                    embedFM = discord.Embed(title="Now Playing", colour=0x753543)
-                    embedFM.set_author(
-                        name=username[0], icon_url=ctx.author.avatar_url)
-                    embedFM.set_image(url=imageurl)
-                    embedFM.add_field(
-                        name="Album", value=album, inline=True)
-                    embedFM.add_field(
-                        name="Song", value=trackName, inline=True)
-                    embedFM.add_field(
-                        name="Artist", value=artistName, inline=False)
+                    if nowPlaying:
+                        embedFM = discord.Embed(title="Now Playing", colour=colorCode)
+                    else:
+                        embedFM = discord.Embed(title="Last Played", colour=colorCode)
+                    embedFM.set_author(name=username[0], icon_url=ctx.author.avatar_url)
+                    embedFM.add_field(name="Song", value=trackName, inline=True)
+                    embedFM.add_field(name="Artist", value=artist, inline=True)
+                    embedFM.add_field(name="Album", value=album, inline=False)
+                    embedFM.set_thumbnail(url=imageURL)
                 await ctx.send(embed=embedFM)
             except Exception as e:
                 await ctx.send("Uh Oh! I couldn't get your status")
