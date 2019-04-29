@@ -147,37 +147,40 @@ class ShopandRoles(commands.Cog, name="Fun Commands"):
             await user.send("Timeout reached. Try again later!")
 
     @commands.command(brief=helpInfo['chooserole']['brief'], usage=helpInfo['chooserole']['usage'])
-    async def chooserole(self, ctx, chosenrole: str=None):
+    async def chooserole(self, ctx):
+        def check(m):
+            return m.channel == ctx.message.channel and m.author == ctx.message.author and m.content.isdigit()
+
         guild = self.bot.get_guild(config['server_ID'])
         roleSelect = f"SELECT Role FROM OwnedRoles WHERE User={ctx.message.author.id}"
         rolesResult = await DB.select_all(roleSelect, DBConn)
         if len(rolesResult) > 0:
-            if chosenrole is None:
-                msgStr = "**Your Owned Roles:** \n"
-                for role in rolesResult:
-                    thisRole = guild.get_role(role[0])
-                    msgStr += f"{thisRole.mention}\n"
-                msgStr += "\n\n Do `!chooserole <role>` to activate your chosen role"
-                await ctx.send(msgStr)
-            else:
-                roleToAdd = discord.utils.find(lambda r: r.name == chosenrole or r.id == chosenrole, guild.roles)
-                if roleToAdd is None:
-                    await ctx.send("I'm not sure what role that is")
-                else:
-                    foundRole = False
-                    for role in rolesResult:
-                        if roleToAdd.id == role[0]:
-                            for role in rolesResult:
-                                if role[0] != 555586664827715584:
-                                    thisRole = guild.get_role(role[0])
-                                    await ctx.message.author.remove_roles(thisRole)
-                            await ctx.message.author.add_roles(roleToAdd)
-                            await ctx.send(f"You activated the {roleToAdd.mention} role!")
-                            userUpdate = f"UPDATE Users Set PrimaryRole = {ctx.message.author.top_role.id} WHERE ID = {ctx.message.author.id}"
-                            await DB.execute(userUpdate, DBConn)
-                            foundRole = True
-                    if not foundRole:
-                        await ctx.send("You don't own that role!")
+            msgStr = "**Your Owned Roles:** \n"
+            ownedRoles = []
+            for role in rolesResult:
+                thisRole = guild.get_role(role[0])
+                ownedRoles.append(thisRole)
+                msgStr += f"{ownedRoles.index(thisRole)}. {thisRole.mention}\n"
+            msgStr += "\n\n Do `!chooserole <number>` to activate your chosen role"
+            await ctx.send(msgStr)
+            try:
+                usermsg = await self.bot.wait_for('message', check=check, timeout=30)
+                try:
+                    chosenRole = ownedRoles[usermsg.content]
+
+                    for role in ownedRoles:
+                        await ctx.message.author.remove_roles(role)
+                    await ctx.message.author.add_roles(chosenRole)
+                    await ctx.send(f"You activated the {chosenRole.mention} role!")
+                except IndexError:
+                    await ctx.send(f"{usermsg.content} wasn't an option. Run the command again")
+                    userUpdate = f"UPDATE Users Set PrimaryRole = {ctx.message.author.top_role.id} WHERE ID = {ctx.message.author.id}"
+                    await DB.execute(userUpdate, DBConn)
+
+            except SaidNoError:
+                pass
+            except asyncio.TimeoutError:
+                await ctx.send("30 second timeout reached. Come back later!")
         else:
             await ctx.send("You don't have any roles to choose from!")
 

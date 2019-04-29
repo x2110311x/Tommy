@@ -135,5 +135,5 @@ ShopandRoles:
     usage: "  Bot will DM you"
   chooserole:
     brief: "Choose your active role from your purchased roles"
-    usage: "[role name or ID]\n Omit the role name to see your owned roles. Role name is case sensitive"
+    usage: ""
 ...
