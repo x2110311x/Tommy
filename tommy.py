@@ -37,7 +37,8 @@ startup_extensions = ["cogs.JoinLeave",
                       "cogs.Gold",
                       "cogs.Fun",
                       "cogs.AuditLogs",
-                      "cogs.ShopandRoles"]
+                      "cogs.ShopandRoles",
+                      "cogs.SocialMedia"]
 
 for extension in startup_extensions:
     bot.load_extension(extension)
