@@ -18,29 +18,29 @@ class SocialMedia(commands.Cog, name="Social Media Feed"):
                 if message.channel.id == 556298180057235483:
                     guild = self.bot.get_guild(config['server_ID'])
                     pingRole = guild.get_role(556306011443691541)
-                    pingRole.edit(reason="Social Media Feed", mentionable=True)
+                    await pingRole.edit(reason="Social Media Feed", mentionable=True)
                     await message.channel.send(f"{pingRole.mention}")
-                    pingRole.edit(reason="Social Media Feed", mentionable=False)
+                    await pingRole.edit(reason="Social Media Feed", mentionable=False)
 
                 if message.channel.id == 556298669280985098:
                     guild = self.bot.get_guild(config['server_ID'])
                     pingRole = guild.get_role(556305967642574848)
-                    pingRole.edit(reason="Social Media Feed", mentionable=True)
+                    await pingRole.edit(reason="Social Media Feed", mentionable=True)
                     await message.channel.send(f"{pingRole.mention}")
-                    pingRole.edit(reason="Social Media Feed", mentionable=False)
+                    await pingRole.edit(reason="Social Media Feed", mentionable=False)
 
                 if message.channel.id == 571332531224444948:
                     guild = self.bot.get_guild(config['server_ID'])
                     pingRole = guild.get_role(572290246402768907)
-                    pingRole.edit(reason="Social Media Feed", mentionable=True)
+                    await pingRole.edit(reason="Social Media Feed", mentionable=True)
                     await message.channel.send(f"{pingRole.mention}")
-                    pingRole.edit(reason="Social Media Feed", mentionable=False)
+                    await pingRole.edit(reason="Social Media Feed", mentionable=False)
             elif message.channel.id == 556304268869763092:
                 guild = self.bot.get_guild(config['server_ID'])
                 pingRole = guild.get_role(556306039209984001)
-                pingRole.edit(reason="Social Media Feed", mentionable=True)
+                await pingRole.edit(reason="Social Media Feed", mentionable=True)
                 await message.channel.send(f"{pingRole.mention}")
-                pingRole.edit(reason="Social Media Feed", mentionable=False)
+                await pingRole.edit(reason="Social Media Feed", mentionable=False)
 
 
 def setup(bot):
