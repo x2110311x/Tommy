@@ -38,9 +38,9 @@ class SocialMedia(commands.Cog, name="Social Media Feed"):
             elif message.channel.id == 556304268869763092:
                 guild = self.bot.get_guild(config['server_ID'])
                 pingRole = guild.get_role(556306039209984001)
-                await pingRole.edit(reason="Social Media Feed", mentionable=True)
+                await pingRole.edit(reason="Poll Ping", mentionable=True)
                 await message.channel.send(f"{pingRole.mention}")
-                await pingRole.edit(reason="Social Media Feed", mentionable=False)
+                await pingRole.edit(reason="Poll Ping", mentionable=False)
 
 
 def setup(bot):

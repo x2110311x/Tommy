@@ -1,3 +1,4 @@
+import asyncio
 import discord
 import time
 import yaml
@@ -205,6 +206,15 @@ class Staff(commands.Cog, name="Staff Commands"):
         guild = ctx.message.channel.guild
         await ctx.send("Resetting status")
         await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(f"with {guild.member_count - 4} members"))
+
+    @commands.Cog.listener()
+    async def on_typing(self, channel, user, when):
+        if channel.id == 555581004698615809:
+            guild = self.bot.get_guild(config['server_ID'])
+            pingRole = guild.get_role(560301865666084919)
+            await pingRole.edit(reason="Announcement", mentionable=True)
+            await asyncio.sleep(30)
+            await pingRole.edit(reason="Announcement", mentionable=False)
 
     @commands.Cog.listener()
     async def on_ready(self):
