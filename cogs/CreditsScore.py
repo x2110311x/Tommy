@@ -46,7 +46,7 @@ class CreditsScore(commands.Cog, name="Credits, Score and Rank Commands"):
     @commands.command(brief=helpInfo['daily']['brief'], usage=helpInfo['daily']['usage'])
     async def daily(self, ctx):
         author = ctx.message.author
-        dailyCheck = f"SELECT LastDaily FROM Dailies WHERE User == {author.id}"
+        dailyCheck = f"SELECT LastDaily FROM Dailies WHERE User = {author.id}"
         dailyDate = await DB.select_one(dailyCheck, DBConn)
         if dailyDate is not None:
             dailyDate = int(dailyDate[0]) + 86400
