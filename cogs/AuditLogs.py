@@ -41,8 +41,8 @@ class AuditLogs(commands.Cog, name="Audits"):
             embedSlur.add_field(name="Message Created At", value=dateCreated, inline=False)
             embedSlur.set_footer(text=f"© x2110311x. Original message ID: {message.id} User ID: {message.author.id}")
 
-            channelDeleteLog = self.bot.get_channel(config['audit-log'])
-            await channelDeleteLog.send(embed=embedSlur)
+            slurLog = self.bot.get_channel(config['slur-log'])
+            await slurLog.send(embed=embedSlur)
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):
@@ -56,8 +56,8 @@ class AuditLogs(commands.Cog, name="Audits"):
         embedDelete.add_field(name="Message Deleted At", value=dateDeleted, inline=False)
         embedDelete.set_footer(text=f"© x2110311x. Original message ID: {message.id}")
 
-        channelDeleteLog = self.bot.get_channel(config['audit-log'])
-        await channelDeleteLog.send(embed=embedDelete)
+        deleteLog = self.bot.get_channel(config['delete-log'])
+        await deleteLog.send(embed=embedDelete)
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
@@ -73,8 +73,8 @@ class AuditLogs(commands.Cog, name="Audits"):
             embedEdit.add_field(name="Message edited At", value=f"{dateEdited}", inline=False)
             embedEdit.set_footer(text=f"© x2110311x. Original message ID: {after.id}")
 
-            channelDeleteLog = self.bot.get_channel(config['audit-log'])
-            await channelDeleteLog.send(embed=embedEdit)
+            editLog = self.bot.get_channel(config['edit-log'])
+            await editLog.send(embed=embedEdit)
         except Exception as e:
             print(e)
 
@@ -89,8 +89,8 @@ class AuditLogs(commands.Cog, name="Audits"):
         emebdJoin.add_field(name="User Account Created At", value=dateCreated, inline=False)
         emebdJoin.set_footer(text=f"© x2110311x. User ID {member.id}")
 
-        channelDeleteLog = self.bot.get_channel(config['audit-log'])
-        await channelDeleteLog.send(embed=emebdJoin)
+        joinLeaveLog = self.bot.get_channel(config['join-leave-log'])
+        await joinLeaveLog.send(embed=emebdJoin)
 
     @commands.Cog.listener()
     async def on_member_remove(self, member):
@@ -101,8 +101,8 @@ class AuditLogs(commands.Cog, name="Audits"):
         embedLeave.add_field(name="Left At", value=dateLeft, inline=False)
         embedLeave.set_footer(text=f"© x2110311x. User ID {member.id}")
 
-        channelDeleteLog = self.bot.get_channel(config['audit-log'])
-        await channelDeleteLog.send(embed=embedLeave)
+        joinLeaveLog = self.bot.get_channel(config['join-leave-log'])
+        await joinLeaveLog.send(embed=embedLeave)
 
     @commands.Cog.listener()
     async def on_member_ban(self, guild, user):
@@ -113,8 +113,8 @@ class AuditLogs(commands.Cog, name="Audits"):
         embedBan.add_field(name="Banned At", value=dateBan, inline=False)
         embedBan.set_footer(text=f"© x2110311x. ")
 
-        channelDeleteLog = self.bot.get_channel(config['audit-log'])
-        await channelDeleteLog.send(embed=embedBan)
+        banLog = self.bot.get_channel(config['ban_log'])
+        await banLog.send(embed=embedBan)
 
     @commands.Cog.listener()
     async def on_member_unban(self, guild, user):
@@ -125,8 +125,8 @@ class AuditLogs(commands.Cog, name="Audits"):
         embedUnban.add_field(name="Unbanned At", value=dateUnban, inline=False)
         embedUnban.set_footer(text=f"© x2110311x. User ID {user.id}")
 
-        channelDeleteLog = self.bot.get_channel(config['audit-log'])
-        await channelDeleteLog.send(embed=embedUnban)
+        banLog = self.bot.get_channel(config['ban_log'])
+        await banLog.send(embed=embedUnban)
 
 
 def setup(bot):
