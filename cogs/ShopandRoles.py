@@ -160,13 +160,13 @@ class ShopandRoles(commands.Cog, name="Fun Commands"):
             for role in rolesResult:
                 thisRole = guild.get_role(role[0])
                 ownedRoles.append(thisRole)
-                msgStr += f"{ownedRoles.index(thisRole)}. {thisRole.mention}\n"
+                msgStr += f"{ownedRoles.index(thisRole)}.\t{thisRole.mention}\n"
             msgStr += "\n\n Do `!chooserole <number>` to activate your chosen role"
             await ctx.send(msgStr)
             try:
                 usermsg = await self.bot.wait_for('message', check=check, timeout=30)
                 try:
-                    chosenRole = ownedRoles[usermsg.content]
+                    chosenRole = ownedRoles[int(usermsg.content)]
 
                     for role in ownedRoles:
                         await ctx.message.author.remove_roles(role)
