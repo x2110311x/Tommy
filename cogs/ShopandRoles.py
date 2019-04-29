@@ -160,7 +160,7 @@ class ShopandRoles(commands.Cog, name="Fun Commands"):
                 msgStr += "\n\n Do `!chooserole <role>` to activate your chosen role"
                 await ctx.send(msgStr)
             else:
-                roleToAdd = discord.utils.find(lambda r: r.name.lower() == chosenrole.lower(), guild.roles)
+                roleToAdd = discord.utils.find(lambda r: r.name == chosenrole or r.ID == chosenrole, guild.roles)
                 if roleToAdd is None:
                     await ctx.send("I'm not sure what role that is")
                 else:
@@ -173,7 +173,7 @@ class ShopandRoles(commands.Cog, name="Fun Commands"):
                                     await ctx.message.author.remove_roles(thisRole)
                             await ctx.message.author.add_roles(roleToAdd)
                             await ctx.send(f"You activated the {roleToAdd.mention} role!")
-                            userUpdate = f"UPDATE Users Set PrimaryRole = {ctx.message.author.top_role.id} WHERE User = {ctx.message.author.id}"
+                            userUpdate = f"UPDATE Users Set PrimaryRole = {ctx.message.author.top_role.id} WHERE ID = {ctx.message.author.id}"
                             await DB.execute(userUpdate, DBConn)
                             foundRole = True
                     if not foundRole:
