@@ -36,6 +36,7 @@ class AuditLogs(commands.Cog, name="Audits"):
             embedSlur = discord.Embed(colour=0x753543)
             embedSlur.set_author(name=message.author.name, icon_url=message.author.avatar_url)
             embedSlur.add_field(name="Slur Used!", value=slursUsedStr, inline=False)
+            embedSlur.add_field(name="Orignal Message", value=message.content, inline=False)
             embedSlur.add_field(name="In Channel", value=message.channel.name, inline=False)
             dateCreated = message.created_at.strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
             embedSlur.add_field(name="Message Created At", value=dateCreated, inline=False)
