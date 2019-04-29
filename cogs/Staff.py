@@ -1,11 +1,11 @@
 import discord
-import sqlite3
 import time
 import yaml
 
 from datetime import datetime
 from discord.ext import commands
 from os.path import abspath
+from include import DB
 
 # General Variables #
 with open(abspath('./include/config.yml'), 'r') as configFile:
@@ -17,8 +17,7 @@ with open(abspath(config['help_file']), 'r') as helpFile:
 helpInfo = helpInfo['Staff']
 
 # Database connections #
-DBConn = sqlite3.connect(abspath(config['DBFile']))
-DB = DBConn.cursor()
+DBConn = None
 
 
 class Staff(commands.Cog, name="Staff Commands"):
@@ -70,8 +69,7 @@ class Staff(commands.Cog, name="Staff Commands"):
 
             try:
                 muteInsert = f"INSERT INTO Mutes (User, UnmuteTime) VALUES ({user.id}, {timeToMute})"
-                DB.execute(muteInsert)
-                DBConn.commit()
+                await DB.execute(muteInsert, DBConn)
                 await user.remove_roles(defaultRole)
                 await user.add_roles(muteRole)
                 await user.send(f"You have been muted for `{mutetime} minutes`")
@@ -94,8 +92,7 @@ class Staff(commands.Cog, name="Staff Commands"):
                 await ctx.send("Please use integers")
             try:
                 banInsert = f"INSERT INTO TempBans (User, UnbanTime) VALUES ({user.id}, {timeToUnban})"
-                DB.execute(banInsert)
-                DBConn.commit()
+                await DB.execute(banInsert, DBConn)
                 await user.send(f"You have been temporaily banned for `{banHours} hours`")
                 await user.ban(reason="Temporary Ban")
                 await ctx.send("User has been banned temporarily")
@@ -109,10 +106,8 @@ class Staff(commands.Cog, name="Staff Commands"):
     @commands.has_role(config['staff_Role'])
     async def warn(self, ctx, user: discord.Member, *, reason):
         try:
-            warnInsert = "INSERT INTO Warnings (User, Reason, Date, WarnedBy) VALUES (?,?,?,?)"
-            DB.execute(warnInsert, (user.id, reason,
-                                    int(time.time()), ctx.author.id))
-            DBConn.commit()
+            warnInsert = f"INSERT INTO Warnings (User, Reason, Date, WarnedBy) VALUES ({user.id},'{reason}',{int(time.time())},{ctx.author.id})"
+            await DB.execute(warnInsert, DBConn)
             await user.send(f"You have been warned for `{reason}`")
             await ctx.send("User has been warned")
         except Exception as e:
@@ -131,15 +126,13 @@ class Staff(commands.Cog, name="Staff Commands"):
             await user.send("You have been unmuted")
             await ctx.send("User has been unmuted")
             deleteMute = f"DELETE FROM Mutes WHERE User = {user.id}"
-            DB.execute(deleteMute)
-            DBConn.commit()
+            await DB.execute(deleteMute, DBConn)
 
     @commands.command(brief=helpInfo['chkwarn']['brief'], usage=helpInfo['chkwarn']['usage'])
     @commands.has_role(config['staff_Role'])
     async def chkwarn(self, ctx, user: discord.Member):
         selectWarn = f"SELECT reason, date FROM Warnings WHERE User={user.id}"
-        DB.execute(selectWarn)
-        warns = DB.fetchall()
+        warns = await DB.select_all(selectWarn, DBConn)
 
         embedWarn = discord.Embed(colour=0x753543)
         embedWarn.set_author(name=user.name, icon_url=user.avatar_url)
@@ -161,14 +154,12 @@ class Staff(commands.Cog, name="Staff Commands"):
     async def userinfo(self, ctx, user: discord.Member):
         selectWarn = f"SELECT count(date) FROM Warnings WHERE User={user.id}"
         selectDailies = f"SELECT DailyUses FROM Dailies WHERE User={user.id}"
-        DB.execute(selectWarn)
-        warns = DB.fetchone()
+        warns = await DB.select_one(selectWarn, DBConn)
         if warns is not None:
             warns = warns[0]
         else:
             warns = 0
-        DB.execute(selectDailies)
-        dailyUses = DB.fetchone()[0]
+        dailyUses = await DB.select_one(selectDailies, DBConn)[0]
         warnCount = warns
         joinDate = user.joined_at.strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
         createdDate = user.created_at.strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
@@ -213,7 +204,12 @@ class Staff(commands.Cog, name="Staff Commands"):
     async def resetstatus(self, ctx):
         guild = ctx.message.channel.guild
         await ctx.send("Resetting status")
-        await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(f"with {guild.member_count} members"))
+        await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(f"with {guild.member_count - 4} members"))
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        global DBConn
+        DBConn = await DB.connect()
 
 
 def setup(bot):
@@ -221,4 +217,4 @@ def setup(bot):
 
 
 def teardown(bot):
-    DB.close()
+    DB.close(DBConn)

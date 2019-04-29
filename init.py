@@ -7,38 +7,18 @@
 # Include Libraries #
 import discord
 import yaml
-import sqlite3
-from datetime import datetime, timedelta
+from datetime import datetime
 from discord.ext import commands
 from os.path import abspath
+from include import DB
 
 # General Variables #
 with open(abspath('./include/config.yml'), 'r') as configFile:
     config = yaml.safe_load(configFile)
 
 bot = commands.Bot(command_prefix="!")
-roleInsert = "INSERT INTO Roles (Name, ID, Color, Priority) VALUES (?,?,?,?)"
-categoryInsert = "INSERT INTO ChannelCategories (ID, Name) VALUES (?,?)"
-channelInsert = "INSERT INTO Channels (ID, Name, Type, Category) VALUES (?,?,?,?)"
-channelInsert2 = "INSERT INTO Channels (ID, Name, Type) VALUES (?,?,?)"
 
-
-# Database connections #
-DBConn = sqlite3.connect(abspath(config['DBFile']))
-DB = DBConn.cursor()
-
-
-@bot.command()
-async def init_db(ctx):
-    with open(abspath('./databases/structure.sql'), 'r') as structure:
-        try:
-            script = structure.read()
-            DB.executescript(script)
-            DBConn.commit()
-            await ctx.send("DB initialized")
-        except Exception as e:
-            await ctx.send("Error")
-            print(e)
+DBConn = None
 
 
 @bot.command()
@@ -49,19 +29,16 @@ async def init_users_db(ctx):
             username = f"{user.name}#{user.discriminator}"
             JoinDate = int(user.joined_at.timestamp())
             CreatedDate = int(user.created_at.timestamp())
+            topRole = user.top_role.id
 
-            userInsert = "INSERT INTO users (ID, Name, JoinDate, CreatedDate, PrimaryRole) VALUES (?,?,?,?,?)"
+            userInsert = f"INSERT INTO Users (ID, Name, JoinDate, CreatedDate, PrimaryRole) VALUES ({user.id},'{username}',{JoinDate},{CreatedDate},{topRole})"
             dailyInsert = f"INSERT INTO Dailies (User) VALUES ({user.id})"
             levelInsert = f"INSERT INTO Levels (User) VALUES ({user.id})"
             creditInsert = f"INSERT INTO Credits (User) VALUES ({user.id})"
-            try:
-                DB.execute(userInsert, (user.id, username, JoinDate, CreatedDate, user.top_role.id))
-                DB.execute(dailyInsert)
-                DB.execute(levelInsert)
-                DB.execute(creditInsert)
-            except sqlite3.IntegrityError:
-                print("IntegrityError")
-    DBConn.commit()
+            await DB.execute(userInsert, DBConn)
+            await DB.execute(dailyInsert, DBConn)
+            await DB.execute(levelInsert, DBConn)
+            await DB.execute(creditInsert, DBConn)
     await ctx.send("User DB created")
 
 
@@ -69,12 +46,8 @@ async def init_users_db(ctx):
 async def init_roles_db(ctx):
     guild = bot.get_guild(config['server_ID'])
     for role in guild.roles:
-        try:
-            DB.execute(roleInsert, (role.name, role.id,
-                                    role.colour.value, role.position))
-        except sqlite3.IntegrityError:
-                print("IntegrityError")
-    DBConn.commit()
+        roleInsert = f"INSERT INTO Roles (Name, ID, Color, Priority) VALUES ('{role.name}',{role.id},'{role.colour.value}',{role.position})"
+        await DB.execute(roleInsert, DBConn)
     await ctx.send("Role DB created")
 
 
@@ -82,46 +55,40 @@ async def init_roles_db(ctx):
 async def init_chan_db(ctx):
     guild = bot.get_guild(config['server_ID'])
     for category in guild.categories:
-        try:
-            DB.execute(categoryInsert, (category.id, category.name))
-        except sqlite3.IntegrityError:
-                print("IntegrityError")
-    DBConn.commit()
+        categoryInsert = f"INSERT INTO ChannelCategories (ID, Name) VALUES ({category.id},'{category.name}')"
+        await DB.execute(categoryInsert, DBConn)
     for channel in guild.voice_channels:
         chantype = "Voice"
-        try:
-            if channel.category is None:
-                DB.execute(channelInsert2, (channel.id, channel.name, chantype))
-            else:
-                DB.execute(channelInsert, (channel.id, channel.name,
-                                           chantype, channel.category.id))
-        except sqlite3.IntegrityError:
-                print("IntegrityError")
+        if channel.category is None:
+            channelInsert2 = f"INSERT INTO Channels (ID, Name, Type) VALUES ({channel.id},'{channel.name}','{chantype}'')"
+            await DB.execute(channelInsert2, DBConn)
+        else:
+            channelInsert = f"INSERT INTO Channels (ID, Name, Type, Category) VALUES ({channel.id},'{channel.name}','{chantype}', {channel.category.id})"
+            await DB.execute(channelInsert, DBConn)
     for channel in guild.text_channels:
         chantype = "Text"
-        try:
-            if channel.category is None:
-                DB.execute(channelInsert2, (channel.id, channel.name, chantype))
-            else:
-                DB.execute(channelInsert, (channel.id, channel.name,
-                                           chantype, channel.category.id))
-        except sqlite3.IntegrityError:
-                print("IntegrityError")
-    DBConn.commit()
+        if channel.category is None:
+            channelInsert2 = f"INSERT INTO Channels (ID, Name, Type) VALUES ({channel.id},'{channel.name}','{chantype}'')"
+            await DB.execute(channelInsert2, DBConn)
+        else:
+            channelInsert = f"INSERT INTO Channels (ID, Name, Type, Category) VALUES ({channel.id},'{channel.name}','{chantype}', {channel.category.id})"
+            await DB.execute(channelInsert, DBConn)
     await ctx.send("Channel DB created")
 
 
 @bot.command()
 async def exit(ctx):
     await ctx.send("Goodbye")
-    DB.close()
     await bot.close()
+    DB.close(DBConn)
     quit()
 
 
 @bot.event
 async def on_ready():
     print("Logged in")
+    global DBConn
+    DBConn = await DB.connect()
 
     # Message Testing Channel #
     chanTest = bot.get_channel(config['testing_Channel'])

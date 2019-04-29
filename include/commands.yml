@@ -2,7 +2,7 @@
 # commands.yml
 # file for Tommy bot help command
 #***********************************
-
+---
 Staff:
   say:
     brief: "Say something using the bot"
@@ -133,3 +133,7 @@ ShopandRoles:
   pingoff:
     brief: "Remove ping roles"
     usage: "  Bot will DM you"
+  chooserole:
+    brief: "Choose your active role from your purchased roles"
+    usage: ""
+...

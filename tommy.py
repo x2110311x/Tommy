@@ -7,14 +7,13 @@
 # Include Libraries #
 import asyncio
 import discord
-import sqlite3
 import time
 import yaml
 
 from difflib import SequenceMatcher
 from datetime import datetime
 from discord.ext import commands
-from include import utilities
+from include import utilities, DB
 from os import system
 from os.path import abspath
 
@@ -26,10 +25,7 @@ with open(abspath('./include/config.yml'), 'r') as configFile:
 intStartTime = int(time.time())  # time the bot started at
 bot = commands.Bot(command_prefix="!")
 
-
-# Database connections #
-DBConn = sqlite3.connect(abspath(config['DBFile']))
-DB = DBConn.cursor()
+DBConn = None
 
 startup_extensions = ["cogs.JoinLeave",
                       "cogs.FM",
@@ -87,7 +83,7 @@ class Utilities(commands.Cog, name="Utility Commands"):
         await asyncio.sleep(30)
         await ctx.send("Restarting Bot")
         await bot.close()
-        DB.close()
+        DB.close(DBConn)
         system('systemctl restart tommy')
 
     @commands.command(brief=helpInfo['update']['brief'], usage=helpInfo['update']['usage'])
@@ -95,7 +91,7 @@ class Utilities(commands.Cog, name="Utility Commands"):
     async def restart(self, ctx):
         await ctx.send("Restarting Bot")
         await bot.close()
-        DB.close()
+        DB.close(DBConn)
         system('systemctl restart tommy')
 
     @commands.command(brief=helpInfo['ping']['brief'], usage=helpInfo['ping']['usage'])
@@ -122,8 +118,7 @@ async def minutetasks():
         # Unmutes #
         curTime = int(time.time())
         muteSelect = f"SELECT User FROM Mutes WHERE UnmuteTime <= {curTime}"
-        DB.execute(muteSelect)
-        unmutes = DB.fetchall()
+        unmutes = await DB.select_all(muteSelect, DBConn)
         if len(unmutes) > 0:
             for userToUnmute in unmutes:
                 try:
@@ -135,14 +130,13 @@ async def minutetasks():
                     await user.add_roles(defaultRole)
                     await user.send("You have been unmuted")
                     deleteMute = f"DELETE FROM Mutes WHERE User ={user.id}"
-                    DB.execute(deleteMute)
+                    await DB.execute(deleteMute, DBConn)
                 except AttributeError:
                     print(f"Unable to unmute user: {userToUnmute[0]}")
 
         # unban #
         banSelect = f"SELECT User FROM TempBans WHERE UnbanTime <= {curTime}"
-        DB.execute(banSelect)
-        unbans = DB.fetchall()
+        unbans = await DB.select_all(banSelect, DBConn)
         if len(unbans) > 0:
             for userToUnban in unbans:
                 try:
@@ -154,14 +148,13 @@ async def minutetasks():
                     await guild.unban(user)
                     await user.send("You have been unbanned")
                     deleteMute = f"DELETE FROM TempBans WHERE User ={user.id}"
-                    DB.execute(deleteMute)
+                    await DB.execute(deleteMute, DBConn)
                 except AttributeError:
                     print(f"Unable to unban user: {userToUnban[0]}")
 
         # Reminders #
         remindSelect = f"SELECT User, Reminder FROM Reminders WHERE date <= {curTime}"
-        DB.execute(remindSelect)
-        reminds = DB.fetchall()
+        reminds = await DB.select_all(remindSelect, DBConn)
         if len(reminds) > 0:
             for remind in reminds:
                 try:
@@ -169,10 +162,9 @@ async def minutetasks():
                     reason = remind[1]
                     await user.send(f"You are being reminded for `{reason}`")
                     deleteReminder = f"DELETE FROM Reminders WHERE User = {user.id} AND Reminder = '{reason}' AND Date < {curTime}"
-                    DB.execute(deleteReminder)
+                    await DB.execute(deleteReminder, DBConn)
                 except AttributeError:
                     print(f"Unable to remind user: {remind[0]}")
-        DBConn.commit()
 
 
 @bot.listen()
@@ -231,13 +223,16 @@ async def on_command_error(ctx, error):
 async def on_ready():
     print("Logged in")
 
+    global DBConn
+    DBConn = await DB.connect()
+
     # Message Testing Channel #
     chanTest = bot.get_channel(config['testing_Channel'])
     await chanTest.send("Bot has started")
 
     # Update Status #
     guild = bot.get_guild(config['server_ID'])
-    await bot.change_presence(status=discord.Status.online, activity=discord.Game(f"with {guild.member_count} members"))
+    await bot.change_presence(status=discord.Status.online, activity=discord.Game(f"with {guild.member_count - 4} members"))
     await minutetasks()
 
 bot.run(config['token'], bot=True, Reconnect=True)

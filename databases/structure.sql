@@ -1,111 +1,132 @@
---
--- File generated with SQLiteStudio v3.2.1 on Sun Apr 21 16:54:07 2019
---
--- Text encoding used: System
---
--- Table: ChannelCategories
 CREATE TABLE ChannelCategories (
-    ID   INTEGER NOT NULL,
-    Name TEXT    NOT NULL,
+    ID   BIGINT NOT NULL,
+    Name VARCHAR(30) NOT NULL,
     PRIMARY KEY (ID)
 );
 
--- Table: Channels
 CREATE TABLE Channels (
-    ID       INTEGER NOT NULL,
-    Name     TEXT    NOT NULL,
-    Type     TEXT    NOT NULL,
-    Category INTEGER,
+    ID       BIGINT NOT NULL,
+    Name     VARCHAR(40)    NOT NULL,
+    Type     VARCHAR(8)    NOT NULL,
+    Category BIGINT,
     PRIMARY KEY (ID),
     FOREIGN KEY (Category) REFERENCES ChannelCategories (ID) ON UPDATE CASCADE
 );
 
--- Table: Credits
+CREATE TABLE Roles (
+    Name     VARCHAR(50)    NOT NULL,
+    ID       BIGINT NOT NULL,
+    Color    VARCHAR(15)    NOT NULL,
+    Priority BIGINT NOT NULL
+                     UNIQUE,
+    PRIMARY KEY (ID)
+);
+
+CREATE TABLE Users (
+    ID          BIGINT NOT NULL,
+    Name        VARCHAR(50) NOT NULL,
+    JoinDate    BIGINT NOT NULL,
+    CreatedDate BIGINT NOT NULL,
+    PrimaryRole BIGINT NOT NULL,
+    LeftServer        VARCHAR(2) NOT NULL DEFAULT 'F',
+    FOREIGN KEY (PrimaryRole) REFERENCES Roles (ID) ON UPDATE CASCADE,
+    PRIMARY KEY (ID)
+);
+
 CREATE TABLE Credits (
-    User    INTEGER NOT NULL,
-    Credits INTEGER NOT NULL
+    User    BIGINT NOT NULL,
+    Credits BIGINT NOT NULL UNSIGNED
                     DEFAULT 0,
     PRIMARY KEY (User),
     FOREIGN KEY (User) REFERENCES Users (ID) ON UPDATE CASCADE
 );
 
--- Table: Dailies
 CREATE TABLE Dailies (
-    User      INTEGER NOT NULL,
-    DailyUses INTEGER NOT NULL
+    User      BIGINT NOT NULL,
+    DailyUses BIGINT NOT NULL
                       DEFAULT 0,
-    LastDaily INTEGER NOT NULL
+    LastDaily BIGINT NOT NULL
                       DEFAULT 0,
     FOREIGN KEY (User) REFERENCES Users (ID) ON UPDATE CASCADE,
     PRIMARY KEY (User)
 );
 
--- Table: FM
 CREATE TABLE FM (
-    User           INTEGER NOT NULL,
-    LastFMUsername TEXT    NOT NULL,
-    LastUpdated    INTEGER NOT NULL,
+    User BIGINT NOT NULL,
+    LastFMUsername VARCHAR(100)  NOT NULL,
+    LastUpdated BIGINT NOT NULL,
     FOREIGN KEY (User) REFERENCES Users (ID) ON UPDATE CASCADE,
     PRIMARY KEY (User)
 );
 
--- Table: Golds
 CREATE TABLE Golds (
-    User INTEGER NOT NULL, TimeGiven INTEGER NOT NULL, GivenBy INTEGER REFERENCES Users (ID) ON UPDATE CASCADE NOT NULL, GoldID INTEGER PRIMARY KEY NOT NULL, FOREIGN KEY(User) REFERENCES Users (ID) ON UPDATE CASCADE);
+    User BIGINT NOT NULL, 
+    TimeGiven BIGINT NOT NULL, 
+    GivenBy BIGINT NOT NULL, 
+    GoldID BIGINT NOT NULL AUTO_INCREMENT, 
+    FOREIGN KEY(User) REFERENCES Users (ID) ON UPDATE CASCADE,
+    FOREIGN KEY(GivenBy) REFERENCES Users (ID) ON UPDATE CASCADE,
+    PRIMARY KEY (GoldID)
+);
 
--- Table: Levels
-CREATE TABLE Levels (User INTEGER NOT NULL, Level INTEGER NOT NULL DEFAULT 0, Points INTEGER NOT NULL DEFAULT 0, MonthLevel INTEGER NOT NULL DEFAULT 0, MonthPoints INTEGER NOT NULL DEFAULT 0, NextPoint INTEGER DEFAULT (0), PRIMARY KEY (User), FOREIGN KEY (User) REFERENCES Users (ID) ON UPDATE CASCADE);
+CREATE TABLE Levels (
+    User BIGINT NOT NULL, 
+    Level BIGINT NOT NULL DEFAULT 0, 
+    Points BIGINT NOT NULL DEFAULT 0, 
+    MonthLevel BIGINT NOT NULL DEFAULT 0, 
+    MonthPoints BIGINT NOT NULL DEFAULT 0, 
+    NextPoint BIGINT DEFAULT 0, 
+    PRIMARY KEY (User), 
+    FOREIGN KEY (User) REFERENCES Users (ID) ON UPDATE CASCADE
+);
 
--- Table: Mutes
-CREATE TABLE Mutes (User INTEGER PRIMARY KEY REFERENCES Users (ID) ON UPDATE CASCADE NOT NULL, UnmuteTime INTEGER NOT NULL);
+CREATE TABLE Mutes (
+    User BIGINT NOT NULL, 
+    UnmuteTime BIGINT NOT NULL,
+    PRIMARY KEY (User),
+    FOREIGN KEY (User) REFERENCES Users (ID) ON UPDATE CASCADE
+);
 
--- Table: OwnedRoles
+CREATE TABLE Reminders (
+    User BIGINT NOT NULL,
+    Reminder VARCHAR(200) NOT NULL, Date BIGINT NOT NULL, 
+    RemindID BIGINT NOT NULL AUTO_INCREMENT,
+    PRIMARY KEY (RemindID),
+    FOREIGN KEY (User) REFERENCES Users (ID) ON UPDATE CASCADE
+);
+
 CREATE TABLE OwnedRoles (
-    User         INTEGER NOT NULL,
-    Role         INTEGER NOT NULL,
-    PurchaseDate INTEGER NOT NULL,
-    PurchaseID   INTEGER NOT NULL,
+    User         BIGINT NOT NULL,
+    Role         BIGINT NOT NULL,
+    PurchaseDate BIGINT NOT NULL,
+    PurchaseID   BIGINT NOT NULL AUTO_INCREMENT,
     PRIMARY KEY (PurchaseID),
     FOREIGN KEY (User) REFERENCES Users (ID) ON UPDATE CASCADE,
     FOREIGN KEY (Role) REFERENCES Roles (ID) ON UPDATE CASCADE
 );
 
--- Table: Reminders
-CREATE TABLE Reminders (User INTEGER REFERENCES Users (ID) ON UPDATE CASCADE NOT NULL, Reminder TEXT NOT NULL, Date INTEGER NOT NULL, RemindID INTEGER PRIMARY KEY  NOT NULL);
-
--- Table: Roles
-CREATE TABLE Roles (
-    Name     TEXT    NOT NULL,
-    ID       INTEGER NOT NULL,
-    Color    TEXT    NOT NULL,
-    Priority INTEGER NOT NULL
-                     UNIQUE,
-    PRIMARY KEY (ID)
+CREATE TABLE Tags (
+    TagName VARCHAR(30) NOT NULL, 
+    User BIGINT NOT NULL, 
+    Content VARCHAR(3000) NOT NULL, 
+    LastUpdated BIGINT NOT NULL, 
+    FOREIGN KEY (User) REFERENCES Users (ID) ON UPDATE CASCADE, 
+    PRIMARY KEY (TagName)
 );
 
--- Table: Tags
-CREATE TABLE Tags (TagName TEXT NOT NULL, User INTEGER NOT NULL, Content TEXT NOT NULL, LastUpdated INTEGER NOT NULL, FOREIGN KEY (User) REFERENCES Users (ID) ON UPDATE CASCADE, PRIMARY KEY (TagName));
-
--- Table: Users
-CREATE TABLE Users (
-    ID          INTEGER NOT NULL,
-    Name        TEXT    NOT NULL,
-    JoinDate    INTEGER NOT NULL,
-    CreatedDate INTEGER NOT NULL,
-    PrimaryRole INTEGER NOT NULL,
-    [Left]        TEXT    NOT NULL
-                        DEFAULT 'F',
-    FOREIGN KEY (PrimaryRole) REFERENCES Roles (ID) ON UPDATE CASCADE,
-    PRIMARY KEY (ID)
+CREATE TABLE TempBans (
+    User      BIGINT NOT NULL,
+    UnbanTime BIGINT NOT NULL,
+    PRIMARY KEY (User),
+    FOREIGN KEY (User) REFERENCES Users (ID) ON UPDATE CASCADE
 );
 
--- Table: Warnings
 CREATE TABLE Warnings (
-    User     INTEGER NOT NULL,
-    Reason   TEXT    NOT NULL,
-    Date     INTEGER NOT NULL,
-    WarnedBy INTEGER NOT NULL,
-    WarnID   INTEGER NOT NULL,
+    User     BIGINT NOT NULL,
+    Reason   VARCHAR(200)    NOT NULL,
+    Date     BIGINT NOT NULL,
+    WarnedBy BIGINT NOT NULL,
+    WarnID   BIGINT NOT NULL AUTO_INCREMENT,
     PRIMARY KEY (WarnID),
     FOREIGN KEY (User) REFERENCES Users (ID) ON UPDATE CASCADE,
     FOREIGN KEY (WarnedBy)REFERENCES Users (ID) ON UPDATE CASCADE

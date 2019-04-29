@@ -1,8 +1,8 @@
 import asyncio
-import sqlite3
 import time
 import yaml
 
+from include import DB
 from discord.ext import commands
 from os.path import abspath
 
@@ -14,9 +14,9 @@ with open(abspath(config['help_file']), 'r') as helpFile:
     helpInfo = yaml.safe_load(helpFile)
 
 helpInfo = helpInfo['Tags']
+
 # Database connections #
-DBConn = sqlite3.connect(abspath(config['DBFile']))
-DB = DBConn.cursor()
+DBConn = None
 
 
 class SaidNoError(Exception):
@@ -32,13 +32,11 @@ class Tags(commands.Cog, name="Tag Commands"):
     async def createtag(self, ctx, tagname, *, tagContent):
         author = ctx.message.author
         checkSelect = f"SELECT count(TagName) FROM Tags WHERE TagName = '{tagname}'"
-        DB.execute(checkSelect)
-        count = DB.fetchone()
+        count = await DB.select_one(checkSelect, DBConn)
         if count is not None:
             if count[0] != 1:
                 creditCheck = f"SELECT Credits FROM Credits WHERE User = {author.id}"
-                DB.execute(creditCheck)
-                credits = DB.fetchone()
+                credits = await DB.select_one(creditCheck, DBConn)
                 if credits is not None:
                     if credits[0] >= 1000:
                         def check(m):
@@ -57,10 +55,9 @@ class Tags(commands.Cog, name="Tag Commands"):
                             await self.bot.wait_for('message', check=check, timeout=30)
                             nowTime = int(time.time())
                             tagInsert = f"INSERT INTO Tags (TagName, User, Content, LastUpdated) VALUES ('{tagname}', {author.id}, '{tagContent}', {nowTime})"
-                            DB.execute(tagInsert)
+                            await DB.execute(tagInsert, DBConn)
                             creditsUpdate = f"UPDATE Credits SET Credits = Credits - 1000 WHERE User = {author.id}"
-                            DB.execute(creditsUpdate)
-                            DBConn.commit()
+                            await DB.execute(creditsUpdate, DBConn)
                             await ctx.send("Tag Created!")
                         except asyncio.TimeoutError:
                             await ctx.send("Timeout reached. Tag creation cancelled!")
@@ -78,8 +75,7 @@ class Tags(commands.Cog, name="Tag Commands"):
     async def deletetag(self, ctx, tagname):
         author = ctx.message.author
         tagSelect = f"SELECT User FROM Tags WHERE TagName ='{tagname}'"
-        DB.execute(tagSelect)
-        tagResult = DB.fetchone()
+        tagResult = await DB.select_one(tagSelect, DBConn)
         if tagResult is not None:
             userCreated = tagResult[0]
             if author.id == userCreated:
@@ -97,8 +93,7 @@ class Tags(commands.Cog, name="Tag Commands"):
                 try:
                     await self.bot.wait_for('message', check=check, timeout=30)
                     tagDelete = f"DELETE FROM Tags WHERE TagName ='{tagname}'"
-                    DB.execute(tagDelete)
-                    DBConn.commit()
+                    await DB.execute(tagDelete, DBConn)
                     await ctx.send("Tag deleted!")
                 except asyncio.TimeoutError:
                     await ctx.send("Timeout reached. Tag deletion cancelled!")
@@ -113,8 +108,7 @@ class Tags(commands.Cog, name="Tag Commands"):
     async def edittag(self, ctx, tagname, *, tagContent):
         author = ctx.message.author
         tagSelect = f"SELECT User,Content FROM Tags WHERE TagName ='{tagname}'"
-        DB.execute(tagSelect)
-        tagResult = DB.fetchone()
+        tagResult = await DB.select_one(tagSelect, DBConn)
         if tagResult is not None:
             userCreated = tagResult[0]
             if author.id == userCreated:
@@ -131,9 +125,8 @@ class Tags(commands.Cog, name="Tag Commands"):
                 await ctx.send(f"Are you sure you want to edit your tag titled `{tagname}` from \n`{tagResult[1]}` to `{tagContent}`?")
                 try:
                     await self.bot.wait_for('message', check=check, timeout=30)
-                    tagDelete = f"UPDATE Tags SET Content = '{tagContent}' WHERE TagName ='{tagname}'"
-                    DB.execute(tagDelete)
-                    DBConn.commit()
+                    tagEdit = f"UPDATE Tags SET Content = '{tagContent}' WHERE TagName ='{tagname}'"
+                    await DB.execute(tagEdit, DBConn)
                     await ctx.send("Tag Edited!")
                 except asyncio.TimeoutError:
                     await ctx.send("Timeout reached. Tag edit cancelled!")
@@ -148,8 +141,7 @@ class Tags(commands.Cog, name="Tag Commands"):
     async def mytags(self, ctx):
         author = ctx.message.author
         tagSelect = f"SELECT TagName FROM Tags WHERE User = {author.id}"
-        DB.execute(tagSelect)
-        tags = DB.fetchall()
+        tags = await DB.select_all(tagSelect, DBConn)
         if len(tags) > 0:
             userTags = "Here are your tags\n```\n"
             for tag in tags:
@@ -162,12 +154,16 @@ class Tags(commands.Cog, name="Tag Commands"):
     @commands.command(brief=helpInfo['tag']['brief'], usage=helpInfo['tag']['usage'])
     async def tag(self, ctx, tagname):
         tagSelect = f"SELECT Content FROM Tags WHERE TagName ='{tagname}'"
-        DB.execute(tagSelect)
-        tagResult = DB.fetchone()
+        tagResult = await DB.select_one(tagSelect, DBConn)
         if tagResult is not None:
             await ctx.send(f"{tagResult[0]}")
         else:
             await ctx.send("Tag does not exist")
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        global DBConn
+        DBConn = await DB.connect()
 
 
 def setup(bot):

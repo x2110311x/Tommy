@@ -1,12 +1,12 @@
 import discord
 import io
 import requests
-import sqlite3
 import yaml
 
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
+from include import DB
 from discord.ext import commands
 from os.path import abspath
 
@@ -15,8 +15,7 @@ with open(abspath('./include/config.yml'), 'r') as configFile:
     config = yaml.safe_load(configFile)
 
 # Database connections #
-DBConn = sqlite3.connect(abspath(config['DBFile']))
-DB = DBConn.cursor()
+DBConn = None
 
 
 class JoinLeave(commands.Cog):
@@ -26,33 +25,28 @@ class JoinLeave(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
-        userInsert = "INSERT INTO users (ID, Name, JoinDate, CreatedDate, PrimaryRole) VALUES (?,?,?,?,?)"
-        dailyInsert = f"INSERT INTO Dailies (User) VALUES ({member.id})"
-        levelInsert = f"INSERT INTO Levels (User) VALUES ({member.id})"
-        creditInsert = f"INSERT INTO Credits (User) VALUES ({member.id})"
-        # Push user to Databases #
+        guild = self.bot.get_guild(config['server_ID'])
+        joinRole = guild.get_role(config['join_Role'])
         username = f"{member.name}#{member.discriminator}"
         JoinDate = int(member.joined_at.timestamp())
         CreatedDate = int(member.created_at.timestamp())
-        guild = self.bot.get_guild(config['server_ID'])
-        joinRole = guild.get_role(config['join_Role'])
+
+        userInsert = f"INSERT INTO Users (ID, Name, JoinDate, CreatedDate, PrimaryRole) VALUES ({member.id},'{username}',{JoinDate},{CreatedDate},{joinRole.id})"
+        dailyInsert = f"INSERT INTO Dailies (User) VALUES ({member.id})"
+        levelInsert = f"INSERT INTO Levels (User) VALUES ({member.id})"
+        creditInsert = f"INSERT INTO Credits (User) VALUES ({member.id})"
+
         # add Role #
         await member.add_roles(joinRole)
         # Insert if new #
-        try:
-            DB.execute(userInsert, (member.id, username, CreatedDate, JoinDate, member.top_role.id))
-            DB.execute(dailyInsert)
-            DB.execute(levelInsert)
-            DB.execute(creditInsert)
-            DBConn.commit()
-        # Update if previously joined #
-        except sqlite3.IntegrityError:
-            DB.execute(
-                f"UPDATE users SET Left = 'F', JoinDate={JoinDate} WHERE ID={member.id}")
+        await DB.execute(userInsert, DBConn)
+        await DB.execute(dailyInsert, DBConn)
+        await DB.execute(levelInsert, DBConn)
+        await DB.execute(creditInsert, DBConn)
 
         # Update Status #
 
-        await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(f"with {guild.member_count} members"))
+        await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(f"with {guild.member_count - 4} members"))
 
         # Join Image #
         dailyImage = Image.open(abspath("./include/images/daily.png"))
@@ -77,11 +71,19 @@ class JoinLeave(commands.Cog):
     @commands.Cog.listener()
     async def on_member_remove(self, member):
         # Remove from user table #
-        DB.execute(f"UPDATE users SET Left='T' WHERE ID={member.id}")
+        await DB.execute(f"DELETE FROM Dailies WHERE User={member.id}", DBConn)
+        await DB.execute(f"DELETE FROM Credits WHERE User={member.id}", DBConn)
+        await DB.execute(f"DELETE FROM Levels WHERE User={member.id}", DBConn)
+        await DB.execute(f"DELETE FROM Users WHERE ID={member.id}", DBConn)
 
         # Update Status #
         guild = self.bot.get_guild(config['server_ID'])
-        await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(f"with {guild.member_count} members"))
+        await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(f"with {guild.member_count - 4} members"))
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        global DBConn
+        DBConn = await DB.connect()
 
 
 def setup(bot):

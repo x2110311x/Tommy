@@ -131,7 +131,3 @@ class AuditLogs(commands.Cog, name="Audits"):
 
 def setup(bot):
     bot.add_cog(AuditLogs(bot))
-
-
-def teardown(bot):
-    DB.close()

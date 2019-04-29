@@ -1,12 +1,12 @@
 import discord
 import json
 import requests
-import sqlite3
 import time
 import yaml
 import urllib.parse
 
 from discord.ext import commands
+from include import DB
 from os.path import abspath
 
 
@@ -20,10 +20,7 @@ with open(abspath(config['help_file']), 'r') as helpFile:
 
 helpInfo = helpInfo['FM']
 # Database connections #
-DBConn = sqlite3.connect(abspath(config['DBFile']))
-DB = DBConn.cursor()
-
-setfmInsert = "INSERT INTO FM (User, LastFMUsername, LastUpdated) VALUES (?,?,?)"
+DBConn = None
 
 
 class FM(commands.Cog, name="FM Commands"):
@@ -33,20 +30,25 @@ class FM(commands.Cog, name="FM Commands"):
 
     @commands.command(brief=helpInfo['setfm']['brief'], usage=helpInfo['setfm']['usage'])
     async def setfm(self, ctx, *, username):
-        try:
-            DB.execute(setfmInsert, (ctx.author.id, username, int(time.time())))
+        selectFM = f"SELECT LastUpdated FROM FM WHERE User = {ctx.author.id}"
+        setfmInsert = f"INSERT INTO FM (User, LastFMUsername, LastUpdated) VALUES ({ctx.author.id},'{username}',{int(time.time())})"
+        fmResult = await DB.select_one(selectFM, DBConn)
+        if fmResult is not None:
+            if len(fmResult) != 0:
+                fmUpdate = f"UPDATE FM SET LastFMUsername='{username}', LastUpdated = {int(time.time())} WHERE User={ctx.author.id}"
+                await DB.execute(fmUpdate, DBConn)
+                await ctx.send("Username Updated!")
+            else:
+                await DB.execute(setfmInsert, DBConn)
+                await ctx.send("Username Set!")
+        else:
+            await DB.execute(setfmInsert, DBConn)
             await ctx.send("Username Set!")
-        except sqlite3.IntegrityError:
-            DB.execute(
-                f"UPDATE FM SET LastFMUsername='{username}', LastUpdated = {int(time.time())} WHERE User={ctx.author.id}")
-            await ctx.send("Username Updated!")
-        DBConn.commit()
 
     @commands.command(brief=helpInfo['fm']['brief'], usage=helpInfo['fm']['usage'])
     async def fm(self, ctx):
         fmSelect = f"SELECT LastFMUsername FROM FM WHERE User = {ctx.author.id}"
-        DB.execute(fmSelect)
-        username = DB.fetchone()
+        username = await DB.select_one(fmSelect, DBConn)
         if username is not None:
             try:
                 api_url = f"http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user={username[0]}&api_key={config['FM_API_Key']}&format=json"
@@ -90,6 +92,11 @@ class FM(commands.Cog, name="FM Commands"):
                 print(e)
         else:
             await ctx.send("Please set your username with !setfm")
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        global DBConn
+        DBConn = await DB.connect()
 
 
 def setup(bot):

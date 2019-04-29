@@ -2,7 +2,6 @@ import asyncio
 import discord
 import io
 import requests
-import sqlite3
 import time
 import yaml
 
@@ -10,6 +9,7 @@ from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
 from discord.ext import commands
+from include import DB
 from include.utilities import seconds_to_units
 from math import ceil
 from math import floor
@@ -27,8 +27,7 @@ with open(abspath(config['help_file']), 'r') as helpFile:
 helpInfo = helpInfo['CreditsScore']
 
 # Database connections #
-DBConn = sqlite3.connect(abspath(config['DBFile']))
-DB = DBConn.cursor()
+DBConn = None
 
 
 async def is_owner(ctx):
@@ -48,8 +47,7 @@ class CreditsScore(commands.Cog, name="Credits, Score and Rank Commands"):
     async def daily(self, ctx):
         author = ctx.message.author
         dailyCheck = f"SELECT LastDaily FROM Dailies WHERE user == {author.id}"
-        DB.execute(dailyCheck)
-        dailyDate = DB.fetchone()
+        dailyDate = await DB.select_one(dailyCheck, DBConn)
         if dailyDate is not None:
             dailyDate = int(dailyDate[0]) + 86400
             if dailyDate <= int(time.time()):
@@ -72,9 +70,8 @@ class CreditsScore(commands.Cog, name="Credits, Score and Rank Commands"):
 
                 dailyUpdate = f"UPDATE Dailies SET DailyUses = DailyUses + 1, LastDaily={int(time.time())} WHERE User = {author.id}"
                 creditUpdate = f"UPDATE Credits SET Credits = Credits + 200 WHERE User = {author.id}"
-                DB.execute(dailyUpdate)
-                DB.execute(creditUpdate)
-                DBConn.commit()
+                await DB.execute(dailyUpdate, DBConn)
+                await DB.execute(creditUpdate, DBConn)
                 await ctx.send(file=sendFile)
             else:
                 timeToDaily = seconds_to_units(dailyDate - int(time.time()))
@@ -88,8 +85,7 @@ class CreditsScore(commands.Cog, name="Credits, Score and Rank Commands"):
             userToScore = ctx.message.author
 
         levelSelect = f"SELECT Level, Points FROM Levels WHERE User ={userToScore.id}"
-        DB.execute(levelSelect)
-        levelsResult = DB.fetchone()
+        levelsResult = await DB.select_one(levelSelect, DBConn)
         if levelsResult is not None:
             levels = levelsResult[0]
             points = levelsResult[1]
@@ -99,24 +95,21 @@ class CreditsScore(commands.Cog, name="Credits, Score and Rank Commands"):
             pointsToNext = 0
 
         creditsSelect = f"SELECT Credits FROM Credits WHERE User = {userToScore.id}"
-        DB.execute(creditsSelect)
-        creditsResult = DB.fetchone()
+        creditsResult = await DB.select_one(creditsSelect, DBConn)
         if creditsResult is not None:
             credits = creditsResult[0]
         else:
             credits = 0
 
         rankSelect = "SELECT User FROM Levels ORDER BY Points Desc"
-        DB.execute(rankSelect)
-        rankSelect = DB.fetchall()
+        rankSelect = await DB.select_all(rankSelect, DBConn)
         if rankSelect is not None:
             rank = rankSelect.index((userToScore.id,)) + 1
         else:
             rank = 0
 
         goldSelect = f"SELECT COUNT(TimeGiven) FROM Golds WHERE User = {userToScore.id}"
-        DB.execute(goldSelect)
-        goldResult = DB.fetchall()
+        goldResult = await DB.select_all(goldSelect, DBConn)
         if goldResult is not None:
             try:
                 golds = goldResult[0][0]
@@ -159,8 +152,7 @@ class CreditsScore(commands.Cog, name="Credits, Score and Rank Commands"):
         if int(amount) <= 1000:
             author = ctx.message.author
             creditCheck = f"SELECT Credits FROM Credits WHERE User = {author.id}"
-            DB.execute(creditCheck)
-            credits = DB.fetchone()
+            credits = await DB.select_one(creditCheck, DBConn)
             if credits is not None:
                 if credits[0] >= int(amount):
                     def check(m):
@@ -178,10 +170,9 @@ class CreditsScore(commands.Cog, name="Credits, Score and Rank Commands"):
                         await self.bot.wait_for('message', check=check, timeout=30)
                         updateDonator = f"UPDATE Credits SET Credits = Credits - {int(amount)} WHERE User = {author.id}"
                         updateDonatee = f"UPDATE Credits SET Credits = Credits +{int(amount)} WHERE User = {user.id}"
-                        DB.execute(updateDonator)
-                        DB.execute(updateDonatee)
+                        await DB.execute(updateDonator, DBConn)
+                        await DB.execute(updateDonatee, DBConn)
                         await ctx.send(f"You donated {amount} credits to {user.mention}")
-                        DBConn.commit()
                     except asyncio.TimeoutError:
                         await ctx.send("Timeout reached. Donation cancelled!")
                     except SaidNoError:
@@ -196,8 +187,7 @@ class CreditsScore(commands.Cog, name="Credits, Score and Rank Commands"):
         rankEnd = (10 * page)
         rankStart = rankEnd - 10
         rankSelect = "SELECT User, Points, Level FROM Levels ORDER BY Points Desc"
-        DB.execute(rankSelect)
-        rankSelect = DB.fetchall()
+        rankSelect = await DB.select_all(rankSelect, DBConn)
         users = []
         if rankSelect is not None:
             if rankEnd < len(rankSelect):
@@ -237,8 +227,7 @@ class CreditsScore(commands.Cog, name="Credits, Score and Rank Commands"):
         rankEnd = (10 * page)
         rankStart = rankEnd - 10
         rankSelect = "SELECT User, MonthPoints, MonthLevel FROM Levels ORDER BY MonthPoints Desc"
-        DB.execute(rankSelect)
-        rankSelect = DB.fetchall()
+        rankSelect = await DB.select_all(rankSelect, DBConn)
         users = []
         if rankSelect is not None:
             if rankEnd < len(rankSelect):
@@ -278,25 +267,22 @@ class CreditsScore(commands.Cog, name="Credits, Score and Rank Commands"):
     async def monthlyreset(self, ctx):
         await ctx.send("Resetting monthly scores")
         updateMonthly = "UPDATE Levels SET MonthPoints = 0, MonthLevel = 0"
-        DB.execute(updateMonthly)
-        DBConn.commit()
+        await DB.execute(updateMonthly, DBConn)
         await ctx.send("Done!")
 
     @commands.Cog.listener()
     async def on_message(self, message):
         user = message.author
         timeSelect = f"SELECT NextPoint FROM Levels WHERE User ={user.id}"
-        DB.execute(timeSelect)
-        nextPoint = DB.fetchone()
+        nextPoint = await DB.select_one(timeSelect, DBConn)
         if nextPoint is not None:
             nextPoint = nextPoint[0]
             if nextPoint <= int(time.time()):
                 newNext = int(time.time() + 30)
                 updatePoints = f"UPDATE Levels SET Points = Points + 1, MonthPoints = MonthPoints +1, NextPoint = {newNext} WHERE User = {user.id}"
-                DB.execute(updatePoints)
+                await DB.execute(updatePoints, DBConn)
                 selectPoints = f"SELECT Level, Points, MonthLevel, MonthPoints FROM Levels WHERE User = {user.id}"
-                DB.execute(selectPoints)
-                points = DB.fetchone()
+                points = await DB.select_one(selectPoints, DBConn)
 
                 if points is not None:
                     allLevel = points[0]
@@ -307,14 +293,21 @@ class CreditsScore(commands.Cog, name="Credits, Score and Rank Commands"):
                     if floor((59.8 * sqrt(allPoints) - 59.8) / 120) > allLevel:
                         level = floor((59.8 * sqrt(allPoints) - 59.8) / 120)
                         updateLevel = f"UPDATE Levels SET Level = {level} WHERE User = {user.id}"
-                        DB.execute(updateLevel)
-                        await message.channel.send(f"<@{user.id}> Level Up! You are at level {level}.")
+                        creditBonus = ceil(allPoints * .05)
+                        updateCredit = f"UPDATE Credits SET Credits = Credits + {creditBonus} WHERE User = {user.id}"
+                        await DB.execute(updateLevel, DBConn)
+                        await DB.execute(updateCredit, DBConn)
+                        await message.channel.send(f"<@{user.id}> Level Up! You are at level {level}. You earned `{creditBonus}` credits!")
 
                     if floor((59.8 * sqrt(monthPoints) - 59.8) / 120) > monthLevel:
                         level = floor((59.8 * sqrt(monthPoints) - 59.8) / 120)
                         updateLevel = f"UPDATE Levels SET MonthLevel = {level} WHERE User = {user.id}"
-                        DB.execute(updateLevel)
-        DBConn.commit()
+                        await DB.execute(updateLevel, DBConn)
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        global DBConn
+        DBConn = await DB.connect()
 
 
 def setup(bot):
