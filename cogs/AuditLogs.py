@@ -17,67 +17,70 @@ class AuditLogs(commands.Cog, name="Audits"):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        slurFound = False
-        slursUsed = []
-        slurlist = config['slurs']
-        for slur in slurlist:
-            if message.content.find(slur['word']) != -1:
-                slurFound = True
-                slursUsed.append(slur['censored'])
-        if slurFound:
-            slursUsedStr = "```Slurs Used:"
-            for slur in slursUsed:
-                slursUsedStr += f"\n{slur}"
-            slursUsedStr += "```"
-            sendMessage = f"Please refrain from using slurs. A copy of your message has been sent to the Staff.\n{slursUsedStr}"
-            await message.delete()
-            await message.channel.send(sendMessage)
+        if message.author != self.bot.user:
+            slurFound = False
+            slursUsed = []
+            slurlist = config['slurs']
+            for slur in slurlist:
+                if message.content.find(slur['word']) != -1:
+                    slurFound = True
+                    slursUsed.append(slur['censored'])
+            if slurFound:
+                slursUsedStr = "```Slurs Used:"
+                for slur in slursUsed:
+                    slursUsedStr += f"\n{slur}"
+                slursUsedStr += "```"
+                sendMessage = f"Please refrain from using slurs. A copy of your message has been sent to the Staff.\n{slursUsedStr}"
+                await message.delete()
+                await message.channel.send(sendMessage)
 
-            embedSlur = discord.Embed(colour=0x753543)
-            embedSlur.set_author(name=message.author.name, icon_url=message.author.avatar_url)
-            embedSlur.add_field(name="Slur Used!", value=slursUsedStr, inline=False)
-            embedSlur.add_field(name="Orignal Message", value=message.content, inline=False)
-            embedSlur.add_field(name="In Channel", value=message.channel.name, inline=False)
-            dateCreated = message.created_at.strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
-            embedSlur.add_field(name="Message Created At", value=dateCreated, inline=False)
-            embedSlur.set_footer(text=f"© x2110311x. Original message ID: {message.id} User ID: {message.author.id}")
+                embedSlur = discord.Embed(colour=0x753543)
+                embedSlur.set_author(name=message.author.name, icon_url=message.author.avatar_url)
+                embedSlur.add_field(name="Slur Used!", value=slursUsedStr, inline=False)
+                embedSlur.add_field(name="Orignal Message", value=message.content, inline=False)
+                embedSlur.add_field(name="In Channel", value=message.channel.name, inline=False)
+                dateCreated = message.created_at.strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
+                embedSlur.add_field(name="Message Created At", value=dateCreated, inline=False)
+                embedSlur.set_footer(text=f"© x2110311x. Original message ID: {message.id} User ID: {message.author.id}")
 
-            slurLog = self.bot.get_channel(config['slur-log'])
-            await slurLog.send(embed=embedSlur)
+                slurLog = self.bot.get_channel(config['slur-log'])
+                await slurLog.send(embed=embedSlur)
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):
-        embedDelete = discord.Embed(colour=0x753543)
-        embedDelete.set_author(name=message.author.name, icon_url=message.author.avatar_url)
-        embedDelete.add_field(name="Message deleted!", value=message.content, inline=False)
-        embedDelete.add_field(name="In Channel", value=message.channel.name, inline=False)
-        dateCreated = message.created_at.strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
-        embedDelete.add_field(name="Message Created At", value=dateCreated, inline=False)
-        dateDeleted = datetime.utcfromtimestamp(int(time.time())).strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
-        embedDelete.add_field(name="Message Deleted At", value=dateDeleted, inline=False)
-        embedDelete.set_footer(text=f"© x2110311x. Original message ID: {message.id}")
+        if message.author != self.bot.user:
+            embedDelete = discord.Embed(colour=0x753543)
+            embedDelete.set_author(name=message.author.name, icon_url=message.author.avatar_url)
+            embedDelete.add_field(name="Message deleted!", value=message.content, inline=False)
+            embedDelete.add_field(name="In Channel", value=message.channel.name, inline=False)
+            dateCreated = message.created_at.strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
+            embedDelete.add_field(name="Message Created At", value=dateCreated, inline=False)
+            dateDeleted = datetime.utcfromtimestamp(int(time.time())).strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
+            embedDelete.add_field(name="Message Deleted At", value=dateDeleted, inline=False)
+            embedDelete.set_footer(text=f"© x2110311x. Original message ID: {message.id}")
 
-        deleteLog = self.bot.get_channel(config['delete-log'])
-        await deleteLog.send(embed=embedDelete)
+            deleteLog = self.bot.get_channel(config['delete-log'])
+            await deleteLog.send(embed=embedDelete)
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
-        try:
-            embedEdit = discord.Embed(colour=0x753543)
-            embedEdit.set_author(name=before.author.name, icon_url=before.author.avatar_url)
-            embedEdit.add_field(name="Message Edited!", value=f"{after.content}", inline=False)
-            embedEdit.add_field(name="Origial Message", value=f"{before.content}", inline=False)
-            embedEdit.add_field(name="In Channel", value=f"{after.channel.name}", inline=False)
-            dateCreated = before.created_at.strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
-            embedEdit.add_field(name="Message Created At", value=f"{dateCreated}", inline=False)
-            dateEdited = datetime.utcfromtimestamp(int(time.time())).strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
-            embedEdit.add_field(name="Message edited At", value=f"{dateEdited}", inline=False)
-            embedEdit.set_footer(text=f"© x2110311x. Original message ID: {after.id}")
+        if after.author != self.bot.user:
+            try:
+                embedEdit = discord.Embed(colour=0x753543)
+                embedEdit.set_author(name=before.author.name, icon_url=before.author.avatar_url)
+                embedEdit.add_field(name="Message Edited!", value=f"{after.content}", inline=False)
+                embedEdit.add_field(name="Origial Message", value=f"{before.content}", inline=False)
+                embedEdit.add_field(name="In Channel", value=f"{after.channel.name}", inline=False)
+                dateCreated = before.created_at.strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
+                embedEdit.add_field(name="Message Created At", value=f"{dateCreated}", inline=False)
+                dateEdited = datetime.utcfromtimestamp(int(time.time())).strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
+                embedEdit.add_field(name="Message edited At", value=f"{dateEdited}", inline=False)
+                embedEdit.set_footer(text=f"© x2110311x. Original message ID: {after.id}")
 
-            editLog = self.bot.get_channel(config['edit-log'])
-            await editLog.send(embed=embedEdit)
-        except Exception as e:
-            print(e)
+                editLog = self.bot.get_channel(config['edit-log'])
+                await editLog.send(embed=embedEdit)
+            except Exception as e:
+                print(e)
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
