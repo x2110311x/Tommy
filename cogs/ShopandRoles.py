@@ -160,7 +160,7 @@ class ShopandRoles(commands.Cog, name="Fun Commands"):
                 msgStr += "\n\n Do `!chooserole <role>` to activate your chosen role"
                 await ctx.send(msgStr)
             else:
-                roleToAdd = discord.utils.find(lambda r: r.name == chosenrole or r.ID == chosenrole, guild.roles)
+                roleToAdd = discord.utils.find(lambda r: r.name == chosenrole or r.id == chosenrole, guild.roles)
                 if roleToAdd is None:
                     await ctx.send("I'm not sure what role that is")
                 else:
