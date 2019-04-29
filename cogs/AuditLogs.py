@@ -66,19 +66,20 @@ class AuditLogs(commands.Cog, name="Audits"):
     async def on_message_edit(self, before, after):
         if after.author != self.bot.user:
             try:
-                embedEdit = discord.Embed(colour=0x753543)
-                embedEdit.set_author(name=before.author.name, icon_url=before.author.avatar_url)
-                embedEdit.add_field(name="Message Edited!", value=f"{after.content}", inline=False)
-                embedEdit.add_field(name="Origial Message", value=f"{before.content}", inline=False)
-                embedEdit.add_field(name="In Channel", value=f"{after.channel.name}", inline=False)
-                dateCreated = before.created_at.strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
-                embedEdit.add_field(name="Message Created At", value=f"{dateCreated}", inline=False)
-                dateEdited = datetime.utcfromtimestamp(int(time.time())).strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
-                embedEdit.add_field(name="Message edited At", value=f"{dateEdited}", inline=False)
-                embedEdit.set_footer(text=f"© x2110311x. Original message ID: {after.id}")
+                if before.content != after.content:
+                    embedEdit = discord.Embed(colour=0x753543)
+                    embedEdit.set_author(name=before.author.name, icon_url=before.author.avatar_url)
+                    embedEdit.add_field(name="Message Edited!", value=f"{after.content}", inline=False)
+                    embedEdit.add_field(name="Origial Message", value=f"{before.content}", inline=False)
+                    embedEdit.add_field(name="In Channel", value=f"{after.channel.name}", inline=False)
+                    dateCreated = before.created_at.strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
+                    embedEdit.add_field(name="Message Created At", value=f"{dateCreated}", inline=False)
+                    dateEdited = datetime.utcfromtimestamp(int(time.time())).strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
+                    embedEdit.add_field(name="Message edited At", value=f"{dateEdited}", inline=False)
+                    embedEdit.set_footer(text=f"© x2110311x. Original message ID: {after.id}")
 
-                editLog = self.bot.get_channel(config['edit-log'])
-                await editLog.send(embed=embedEdit)
+                    editLog = self.bot.get_channel(config['edit-log'])
+                    await editLog.send(embed=embedEdit)
             except Exception as e:
                 print(e)
 

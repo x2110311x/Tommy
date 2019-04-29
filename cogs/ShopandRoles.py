@@ -75,7 +75,7 @@ async def shop_messages(bot):
         await msgT3.add_reaction(reactions[x])
 
 
-class ShopandRoles(commands.Cog, name="Fun Commands"):
+class ShopandRoles(commands.Cog, name="Role Commands"):
     def __init__(self, bot):
         self.bot = bot
         self._last_member = None
