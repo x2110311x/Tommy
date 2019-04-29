@@ -151,7 +151,7 @@ class ShopandRoles(commands.Cog, name="Fun Commands"):
         guild = self.bot.get_guild(config['server_ID'])
         roleSelect = f"SELECT Role FROM OwnedRoles WHERE User={ctx.message.author.id}"
         rolesResult = await DB.select_all(roleSelect, DBConn)
-        if rolesResult is not None:
+        if len(rolesResult) > 0:
             if chosenrole is None:
                 msgStr = "**Your Owned Roles:** \n"
                 for role in rolesResult:
