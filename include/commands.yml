@@ -136,4 +136,12 @@ ShopandRoles:
   chooserole:
     brief: "Choose your active role from your purchased roles"
     usage: ""
+
+SuggestionReport:
+  suggest:
+    brief: "Submit a suggestion for the server"
+    usage: "[suggestion]  If you don't include the suggestion, the bot will DM you"
+  botsuggest:
+    brief: "Submit a suggestion for the bot"
+    usage: "[suggestion]  If you don't include the suggestion, the bot will DM you"
 ...
