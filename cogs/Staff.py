@@ -32,6 +32,7 @@ class Staff(commands.Cog, name="Staff Commands"):
         if channel is None:
             channel = ctx.channel
         await channel.send(textToSay)
+        await ctx.message.delete()
 
     @commands.command(brief=helpInfo['kick']['brief'], usage=helpInfo['kick']['usage'])
     @commands.has_role(config['staff_Role'])
