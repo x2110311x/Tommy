@@ -206,7 +206,7 @@ class Staff(commands.Cog, name="Staff Commands"):
     async def resetstatus(self, ctx):
         guild = ctx.message.channel.guild
         await ctx.send("Resetting status")
-        await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(f"with {guild.member_count - 4} members"))
+        await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(f"with {guild.member_count - 3} members"))
 
     @commands.Cog.listener()
     async def on_typing(self, channel, user, when):

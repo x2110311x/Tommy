@@ -1,3 +1,4 @@
+
 # **************************************** #
 # tommy.py
 # Written by x2110311x
@@ -241,7 +242,7 @@ async def on_ready():
 
     # Update Status #
     guild = bot.get_guild(config['server_ID'])
-    await bot.change_presence(status=discord.Status.online, activity=discord.Game(f"with {guild.member_count - 4} members"))
+    await bot.change_presence(status=discord.Status.online, activity=discord.Game(f"with {guild.member_count - 3} members"))
     await minutetasks()
 
 bot.run(config['token'], bot=True, Reconnect=True)

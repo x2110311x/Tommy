@@ -46,7 +46,7 @@ class JoinLeave(commands.Cog):
 
         # Update Status #
 
-        await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(f"with {guild.member_count - 4} members"))
+        await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(f"with {guild.member_count - 3} members"))
 
         # Join Image #
         dailyImage = Image.open(abspath("./include/images/daily.png"))
@@ -78,7 +78,7 @@ class JoinLeave(commands.Cog):
 
         # Update Status #
         guild = self.bot.get_guild(config['server_ID'])
-        await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(f"with {guild.member_count - 4} members"))
+        await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(f"with {guild.member_count - 3} members"))
 
     @commands.Cog.listener()
     async def on_ready(self):
