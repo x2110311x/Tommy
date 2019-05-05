@@ -127,11 +127,8 @@ Utilities:
     usage: "Only x2 can do this"
 
 ShopandRoles:
-  pingon:
-    brief: "Add ping roles"
-    usage: "  Bot will DM you"
-  pingoff:
-    brief: "Remove ping roles"
+  pingroles:
+    brief: "Add or remove ping roles"
     usage: "  Bot will DM you"
   chooserole:
     brief: "Choose your active role from your purchased roles"
