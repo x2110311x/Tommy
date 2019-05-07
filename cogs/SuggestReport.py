@@ -35,7 +35,6 @@ class SuggestReport(commands.Cog, name="Suggestion and Report Commands"):
 
         def check(m):
             return m.author == author and m.channel == author.dm_channel
-
         if suggestion is None:
             await ctx.send("Please check your DMs")
             await author.send("What is your suggestion?\nPlease note that bot suggestions can be done with !botsuggest")

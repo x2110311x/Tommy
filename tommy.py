@@ -121,7 +121,7 @@ class Utilities(commands.Cog, name="Utility Commands"):
 bot.add_cog(Utilities(bot))
 
 
-async def minutetasks():
+async def minutetasks(DBConn):
     while bot.is_ready():
         # Wait 20 seconds to run again #
         await asyncio.sleep(20)
@@ -243,6 +243,6 @@ async def on_ready():
     # Update Status #
     guild = bot.get_guild(config['server_ID'])
     await bot.change_presence(status=discord.Status.online, activity=discord.Game(f"with {guild.member_count - 3} members"))
-    await minutetasks()
+    await minutetasks(DBConn)
 
 bot.run(config['token'], bot=True, Reconnect=True)
