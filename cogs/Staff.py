@@ -161,7 +161,8 @@ class Staff(commands.Cog, name="Staff Commands"):
             warns = warns[0]
         else:
             warns = 0
-        dailyUses = await DB.select_one(selectDailies, DBConn)[0]
+        dailyUses = await DB.select_one(selectDailies, DBConn)
+        dailyUses = dailyUses[0]
         warnCount = warns
         joinDate = user.joined_at.strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
         createdDate = user.created_at.strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
