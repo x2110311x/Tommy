@@ -107,14 +107,19 @@ class Staff(commands.Cog, name="Staff Commands"):
     @commands.command(brief=helpInfo['warn']['brief'], usage=helpInfo['warn']['usage'])
     @commands.has_role(config['staff_Role'])
     async def warn(self, ctx, user: discord.Member, *, reason):
-        try:
-            warnInsert = f"INSERT INTO Warnings (User, Reason, Date, WarnedBy) VALUES ({user.id},'{reason}',{int(time.time())},{ctx.author.id})"
-            await DB.execute(warnInsert, DBConn)
-            await user.send(f"You have been warned for `{reason}`")
-            await ctx.send("User has been warned")
-        except Exception as e:
-            await ctx.send("Unable to warn user")
-            print(e)
+        guild = self.bot.get_guild(config['server_ID'])
+        staffRole = guild.get_role(config['staff_Role'])
+        if staffRole not in user.roles:
+            try:
+                warnInsert = f"INSERT INTO Warnings (User, Reason, Date, WarnedBy) VALUES ({user.id},'{reason}',{int(time.time())},{ctx.author.id})"
+                await DB.execute(warnInsert, DBConn)
+                await user.send(f"You have been warned for `{reason}`")
+                await ctx.send("User has been warned")
+            except Exception as e:
+                await ctx.send("Unable to warn user")
+                print(e)
+        else:
+            print("You cannot warn another staff member!")
 
     @commands.command(brief=helpInfo['unmute']['brief'], usage=helpInfo['unmute']['usage'])
     @commands.has_role(config['staff_Role'])
