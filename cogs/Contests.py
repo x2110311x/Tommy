@@ -44,7 +44,7 @@ class Contest(commands.Cog, name="Contest Commands"):
                     else:
                         def check(m):
                             if m.author == author and m.channel == author.dm_channel:
-                                if m.content.lower() == 'yes':
+                                if m.content.lower() == 'yes' or m.content.lower.find("yeah") != -1:
                                     return True
                                 elif m.content.lower() == 'no':
                                     raise SaidNoError
@@ -86,7 +86,7 @@ class Contest(commands.Cog, name="Contest Commands"):
                     else:
                         def check(m):
                             if m.author == author and m.channel == author.dm_channel:
-                                if m.content.lower() == 'yes':
+                                if m.content.lower() == 'yes' or m.content.lower.find("yeah") != -1:
                                     return True
                                 elif m.content.lower() == 'no':
                                     raise SaidNoError
