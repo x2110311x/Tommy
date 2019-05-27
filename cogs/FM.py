@@ -61,7 +61,10 @@ class FM(commands.Cog, name="FM Commands"):
         
         if username is not None:
             try:
-                api_url = f"http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user={username[0]}&api_key={config['FM_API_Key']}&format=json"
+                try:
+                    api_url = f"http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user={username[0]}&api_key={config['FM_API_Key']}&format=json"
+                except (KeyError, AttributeError) as e:
+                    api_url = f"http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user={username}&api_key={config['FM_API_Key']}&format=json"
                 fmreponse = requests.get(api_url)
                 if fmreponse.status_code != 200:
                     raise ValueError(f"Could not get status. Reponse code: {fmreponse.status_code}")
