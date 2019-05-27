@@ -46,31 +46,34 @@ class FM(commands.Cog, name="FM Commands"):
             await ctx.send("Username Set!")
 
     @commands.command(brief=helpInfo['fm']['brief'], usage=helpInfo['fm']['usage'])
-    async def fm(self, ctx, user = None):
+    async def fm(self, ctx, *, user = None):
         if user is None:
             userID = ctx.author.id
+            iconUrl = ctx.author.avatar_url
             fmSelect = f"SELECT LastFMUsername FROM FM WHERE User = {userID}"
             username = await DB.select_one(fmSelect, DBConn)
         else:
             if len(ctx.message.mentions) > 0:
                 userID = ctx.message.mentions[0].id
+                iconUrl = ctx.message.mentions[0].avatar_url
                 fmSelect = f"SELECT LastFMUsername FROM FM WHERE User = {userID}"
                 username = await DB.select_one(fmSelect, DBConn)
             else:
                 username = user
+                iconUrl = "http://x2110311x.me/blankalbum.png"
         
         if username is not None:
             try:
-                try:
-                    api_url = f"http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user={username[0]}&api_key={config['FM_API_Key']}&format=json"
-                except (KeyError, AttributeError) as e:
-                    api_url = f"http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user={username}&api_key={config['FM_API_Key']}&format=json"
+                if type(username) is tuple:
+                    username = username[0]
+                api_url = f"http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user={username}&api_key={config['FM_API_Key']}&format=json"
                 fmreponse = requests.get(api_url)
                 if fmreponse.status_code != 200:
                     raise ValueError(f"Could not get status. Reponse code: {fmreponse.status_code}")
                 else:
                     fmData = json.loads(fmreponse.text)
                     trackData = fmData['recenttracks']['track'][0]
+                    print(1)
                     artist = trackData['artist']['#text']
                     album = trackData['album']['#text']
                     trackName = trackData['name']
@@ -94,7 +97,7 @@ class FM(commands.Cog, name="FM Commands"):
                         embedFM = discord.Embed(title="Now Playing", colour=0x753543, url=f"https://www.last.fm/user/{username}")
                     else:
                         embedFM = discord.Embed(title="Last Played", colour=0x753543, url=f"https://www.last.fm/user/{username}")
-                    embedFM.set_author(name=username[0], icon_url=ctx.author.avatar_url)
+                    embedFM.set_author(name=username, icon_url=iconUrl)
                     embedFM.add_field(name="Song", value=trackName, inline=True)
                     embedFM.add_field(name="Artist", value=artist, inline=True)
                     embedFM.add_field(name="Album", value=album, inline=False)
@@ -103,6 +106,8 @@ class FM(commands.Cog, name="FM Commands"):
             except Exception as e:
                 await ctx.send("Uh Oh! I couldn't get your status. Perhaps the username is not set correctly")
                 print(e)
+                print(username)
+                print(fmData['recenttracks']['track'])
         else:
             if len(ctx.message.mentions) > 0:
                 await ctx.send("User has not set their username yet")

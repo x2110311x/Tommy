@@ -93,7 +93,7 @@ FM:
     usage: "<username>"
   fm:
     brief: "Check your LastFM Status"
-    usage: "\nBuggy currently. Some songs randomly break it"
+    usage: "<@DiscordUser, FMUsername, or nothing>\nTagging a user will check their status\nEntering a last.fm username will look up that users status"
 
 Reminders:
   remind:
