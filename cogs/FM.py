@@ -48,17 +48,14 @@ class FM(commands.Cog, name="FM Commands"):
     @commands.command(brief=helpInfo['fm']['brief'], usage=helpInfo['fm']['usage'])
     async def fm(self, ctx, user = None):
         if user is None:
-            user = ctx.author.id
-            fmSelect = f"SELECT LastFMUsername FROM FM WHERE User = {user}"
+            userID = ctx.author.id
+            fmSelect = f"SELECT LastFMUsername FROM FM WHERE User = {userID}"
             username = await DB.select_one(fmSelect, DBConn)
         else:
             if len(ctx.message.mentions) > 0:
-                user = ctx.message.mentions[0].id
-                fmSelect = f"SELECT LastFMUsername FROM FM WHERE User = {user}"
+                userID = ctx.message.mentions[0].id
+                fmSelect = f"SELECT LastFMUsername FROM FM WHERE User = {userID}"
                 username = await DB.select_one(fmSelect, DBConn)
-                if username is None:
-                    await ctx.send("User has not set a username yet!")
-                    break
             else:
                 username = user
         
@@ -101,10 +98,13 @@ class FM(commands.Cog, name="FM Commands"):
                     embedFM.set_thumbnail(url=imageURL)
                 await ctx.send(embed=embedFM)
             except Exception as e:
-                await ctx.send("Uh Oh! I couldn't get your status")
+                await ctx.send("Uh Oh! I couldn't get your status. Perhaps the username is not set correctly")
                 print(e)
         else:
-            await ctx.send("Please set your username with !setfm")
+            if len(ctx.message.mentions) > 0:
+                await ctx.send("User has not set their username yet")
+            elif User is None:
+                await ctx.send("Please set your username with !setfm")
 
     @commands.Cog.listener()
     async def on_ready(self):
