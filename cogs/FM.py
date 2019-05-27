@@ -47,7 +47,7 @@ class FM(commands.Cog, name="FM Commands"):
 
     @commands.command(brief=helpInfo['fm']['brief'], usage=helpInfo['fm']['usage'])
     async def fm(self, ctx, user = None):
-        if user = None:
+        if user is None:
             user = ctx.author.id
             fmSelect = f"SELECT LastFMUsername FROM FM WHERE User = {user}"
             username = await DB.select_one(fmSelect, DBConn)
