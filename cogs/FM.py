@@ -46,9 +46,22 @@ class FM(commands.Cog, name="FM Commands"):
             await ctx.send("Username Set!")
 
     @commands.command(brief=helpInfo['fm']['brief'], usage=helpInfo['fm']['usage'])
-    async def fm(self, ctx):
-        fmSelect = f"SELECT LastFMUsername FROM FM WHERE User = {ctx.author.id}"
-        username = await DB.select_one(fmSelect, DBConn)
+    async def fm(self, ctx, user = None):
+        if user = None:
+            user = ctx.author.id
+            fmSelect = f"SELECT LastFMUsername FROM FM WHERE User = {user}"
+            username = await DB.select_one(fmSelect, DBConn)
+        else:
+            if len(ctx.message.mentions) > 0:
+                user = ctx.message.mentions[0].id
+                fmSelect = f"SELECT LastFMUsername FROM FM WHERE User = {user}"
+                username = await DB.select_one(fmSelect, DBConn)
+                if username is None:
+                    await ctx.send("User has not set a username yet!")
+                    break
+            else:
+                username = user
+        
         if username is not None:
             try:
                 api_url = f"http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user={username[0]}&api_key={config['FM_API_Key']}&format=json"
@@ -78,9 +91,9 @@ class FM(commands.Cog, name="FM Commands"):
                         nowPlaying = False
 
                     if nowPlaying:
-                        embedFM = discord.Embed(title="Now Playing", colour=0x753543)
+                        embedFM = discord.Embed(title="Now Playing", colour=0x753543, url=f"https://www.last.fm/user/{username}")
                     else:
-                        embedFM = discord.Embed(title="Last Played", colour=0x753543)
+                        embedFM = discord.Embed(title="Last Played", colour=0x753543, url=f"https://www.last.fm/user/{username}")
                     embedFM.set_author(name=username[0], icon_url=ctx.author.avatar_url)
                     embedFM.add_field(name="Song", value=trackName, inline=True)
                     embedFM.add_field(name="Artist", value=artist, inline=True)
