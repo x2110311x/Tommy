@@ -1,4 +1,5 @@
 import discord
+import io
 import json
 import requests
 import time
@@ -8,6 +9,8 @@ import urllib.parse
 from discord.ext import commands
 from include import DB
 from os.path import abspath
+from PIL import Image
+from PIL import ImageDraw
 
 
 # General Variables #
@@ -46,7 +49,7 @@ class FM(commands.Cog, name="FM Commands"):
             await ctx.send("Username Set!")
 
     @commands.command(brief=helpInfo['fm']['brief'], usage=helpInfo['fm']['usage'])
-    async def fm(self, ctx, *, user = None):
+    async def fm(self, ctx, *, user=None):
         if user is None:
             userID = ctx.author.id
             iconUrl = ctx.author.avatar_url
@@ -61,7 +64,7 @@ class FM(commands.Cog, name="FM Commands"):
             else:
                 username = user
                 iconUrl = "http://x2110311x.me/blankalbum.png"
-        
+
         if username is not None:
             try:
                 if type(username) is tuple:
@@ -83,6 +86,7 @@ class FM(commands.Cog, name="FM Commands"):
                             artistEncoded = urllib.parse.quote(artist)
                             albumEncoded = urllib.parse.quote(album)
                             album_api_url = f"http://ws.audioscrobbler.com/2.0/?method=album.getinfo&api_key={config['FM_API_Key']}&artist={artistEncoded}&album={albumEncoded}&format=json"
+                            album_api_url = album_api_url.replace("%20", "+")
                             albumResponse = requests.get(album_api_url)
                             albumData = json.loads(albumResponse.text)
                             imageURL = albumData['image'][1]['#text']
@@ -103,15 +107,90 @@ class FM(commands.Cog, name="FM Commands"):
                     embedFM.add_field(name="Album", value=album, inline=False)
                     embedFM.set_thumbnail(url=imageURL)
                 await ctx.send(embed=embedFM)
+            except ValueError:
+                await ctx.send("I couldn't find that user! Try resetting your username")
             except Exception as e:
                 await ctx.send("Uh Oh! I couldn't get your status. Perhaps the username is not set correctly")
                 print(e)
-                print(username)
-                print(fmData['recenttracks']['track'])
         else:
             if len(ctx.message.mentions) > 0:
                 await ctx.send("User has not set their username yet")
-            elif User is None:
+            elif user is None:
+                await ctx.send("Please set your username with !setfm")
+
+    @commands.command(brief=helpInfo['weekly']['brief'], usage=helpInfo['weekly']['usage'])
+    async def weekly(self, ctx, *, user=None):
+        if user is None:
+            userID = ctx.author.id
+            fmSelect = f"SELECT LastFMUsername FROM FM WHERE User = {userID}"
+            username = await DB.select_one(fmSelect, DBConn)
+        else:
+            if len(ctx.message.mentions) > 0:
+                userID = ctx.message.mentions[0].id
+                fmSelect = f"SELECT LastFMUsername FROM FM WHERE User = {userID}"
+                username = await DB.select_one(fmSelect, DBConn)
+            else:
+                username = user
+
+        if username is not None:
+            try:
+                if type(username) is tuple:
+                    username = username[0]
+                api_url = f"http://ws.audioscrobbler.com/2.0/?method=user.getweeklyalbumchart&user={username}&api_key={config['FM_API_Key']}&format=json"
+                fmreponse = requests.get(api_url)
+                if fmreponse.status_code != 200:
+                    raise ValueError(f"Could not get status. Reponse code: {fmreponse.status_code}")
+                else:
+                    fmData = json.loads(fmreponse.text)
+                    albumData = fmData['weeklyalbumchart']['album'][:9]
+                    count = 0
+                    img = Image.new('RGB', (300, 300), color='black')
+                    for album in albumData:
+                        try:
+                            artistEncoded = urllib.parse.quote(album['artist']['#text'])
+                            albumEncoded = urllib.parse.quote(album['name'])
+                            album_api_url = f"http://ws.audioscrobbler.com/2.0/?method=album.getinfo&api_key={config['FM_API_Key']}&artist={artistEncoded}&album={albumEncoded}&format=json"
+                            album_api_url = album_api_url.replace("%20", "+")
+                            albumResponse = requests.get(album_api_url)
+
+                            albumData = json.loads(albumResponse.text)
+                            imageURL = albumData['album']['image'][3]['#text']
+                            albumImgUrl = requests.get(imageURL)
+                            avatarImg = Image.open(io.BytesIO(albumImgUrl.content))
+                            avatarImg.thumbnail((100, 100), Image.ANTIALIAS)
+
+                        except (ValueError, KeyError, IndexError):
+                            imageURL = "http://x2110311x.me/albumerror.png"
+                            albumImgUrl = requests.get(imageURL)
+                            avatarImg = Image.open(io.BytesIO(albumImgUrl.content))
+                            avatarImg.thumbnail((100, 100), Image.ANTIALIAS)
+
+                        x = int((count % 3) * 100)
+                        if count >= 0 and count < 3:
+                            y = 0
+                        elif count >= 3 and count < 6:
+                            y = 100
+                        elif count >= 6 and count < 9:
+                            y = 200
+                        img.paste(avatarImg, (x, y))
+                        count += 1
+
+                    imgByteArr = io.BytesIO()
+                    img.save(imgByteArr, format='PNG')
+                    imgByteArr.seek(0)
+                    sendFile = discord.File(fp=imgByteArr, filename="weekly.png")
+                    embedFM = discord.Embed(title=f"Top Weekly Albums for {username}", colour=0x753543, url=f"https://www.last.fm/user/{username}")
+                    embedFM.set_image(url="attachment://weekly.png")
+                    await ctx.send(file=sendFile, embed=embedFM)
+            except ValueError:
+                await ctx.send("I couldn't find that user! Try resetting your username")
+            except Exception as e:
+                await ctx.send("Uh Oh! I couldn't get your weekly. Perhaps the username is not set correctly")
+                print(e)
+        else:
+            if len(ctx.message.mentions) > 0:
+                await ctx.send("User has not set their username yet")
+            elif user is None:
                 await ctx.send("Please set your username with !setfm")
 
     @commands.Cog.listener()

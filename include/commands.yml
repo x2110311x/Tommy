@@ -93,7 +93,10 @@ FM:
     usage: "<username>"
   fm:
     brief: "Check your LastFM Status"
-    usage: "<@DiscordUser, FMUsername, or nothing>\nTagging a user will check their status\nEntering a last.fm username will look up that users status"
+    usage: "<@DiscordUser, FMUsername, or nothing>\nTagging a user will check their status\nEntering a last.fm username will look up that user's status"
+  weekly:
+    brief: "Get your top listened albums from the past week"
+    usage: "<@DiscordUser, FMUsername, or nothing>\nTagging a user will check their weekly\nEntering a last.fm username will look up that user's weekly"
 
 Reminders:
   remind:
