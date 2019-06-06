@@ -171,6 +171,10 @@ class SuggestReport(commands.Cog, name="Suggestion and Report Commands"):
         except asyncio.TimeoutError:
             await author.send("Timeout reached. Report cancelled!")
 
+    @commands.check
+    async def globally_block_dms(ctx):
+        return ctx.guild is not None
+
 
 def setup(bot):
     bot.add_cog(SuggestReport(bot))

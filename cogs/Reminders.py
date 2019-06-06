@@ -55,6 +55,10 @@ class Reminders(commands.Cog, name="Reminder Commands"):
         else:
             await ctx.send("You have no reminders")
 
+    @commands.check
+    async def globally_block_dms(ctx):
+        return ctx.guild is not None
+
     @commands.Cog.listener()
     async def on_ready(self):
         global DBConn

@@ -133,6 +133,10 @@ class AuditLogs(commands.Cog, name="Audits"):
         banLog = self.bot.get_channel(config['ban_log'])
         await banLog.send(embed=embedUnban)
 
+    @commands.check
+    async def globally_block_dms(ctx):
+        return ctx.guild is not None
+
 
 def setup(bot):
     bot.add_cog(AuditLogs(bot))

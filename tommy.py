@@ -230,6 +230,11 @@ async def on_command_error(ctx, error):
         await ctx.send(f"Unknown error occured. Please contact x2110311x \n{error}")
 
 
+@bot.check
+async def globally_block_dms(ctx):
+    return ctx.guild is not None
+
+
 @bot.event
 async def on_ready():
     print("Logged in")

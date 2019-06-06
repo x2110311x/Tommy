@@ -160,6 +160,10 @@ class Tags(commands.Cog, name="Tag Commands"):
         else:
             await ctx.send("Tag does not exist")
 
+    @commands.check
+    async def globally_block_dms(ctx):
+        return ctx.guild is not None
+
     @commands.Cog.listener()
     async def on_ready(self):
         global DBConn

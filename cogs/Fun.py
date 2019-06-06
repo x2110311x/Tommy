@@ -32,6 +32,10 @@ class Fun(commands.Cog, name="Fun Commands"):
         msgSearch = await ctx.send(F"Searching for `{query}` ")
         await msgSearch.edit(content=utilities.ytsearch(query))
 
+    @commands.check
+    async def globally_block_dms(ctx):
+        return ctx.guild is not None
+
 
 def setup(bot):
     bot.add_cog(Fun(bot))

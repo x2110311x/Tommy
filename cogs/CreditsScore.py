@@ -272,37 +272,42 @@ class CreditsScore(commands.Cog, name="Credits, Score and Rank Commands"):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        user = message.author
-        timeSelect = f"SELECT NextPoint FROM Levels WHERE User ={user.id}"
-        nextPoint = await DB.select_one(timeSelect, DBConn)
-        if nextPoint is not None:
-            nextPoint = nextPoint[0]
-            if nextPoint <= int(time.time()):
-                newNext = int(time.time() + 30)
-                updatePoints = f"UPDATE Levels SET Points = Points + 1, MonthPoints = MonthPoints +1, NextPoint = {newNext} WHERE User = {user.id}"
-                await DB.execute(updatePoints, DBConn)
-                selectPoints = f"SELECT Level, Points, MonthLevel, MonthPoints FROM Levels WHERE User = {user.id}"
-                points = await DB.select_one(selectPoints, DBConn)
+        if ctx.guild is not None:
+            user = message.author
+            timeSelect = f"SELECT NextPoint FROM Levels WHERE User ={user.id}"
+            nextPoint = await DB.select_one(timeSelect, DBConn)
+            if nextPoint is not None:
+                nextPoint = nextPoint[0]
+                if nextPoint <= int(time.time()):
+                    newNext = int(time.time() + 30)
+                    updatePoints = f"UPDATE Levels SET Points = Points + 1, MonthPoints = MonthPoints +1, NextPoint = {newNext} WHERE User = {user.id}"
+                    await DB.execute(updatePoints, DBConn)
+                    selectPoints = f"SELECT Level, Points, MonthLevel, MonthPoints FROM Levels WHERE User = {user.id}"
+                    points = await DB.select_one(selectPoints, DBConn)
 
-                if points is not None:
-                    allLevel = points[0]
-                    allPoints = points[1]
-                    monthLevel = points[2]
-                    monthPoints = points[3]
+                    if points is not None:
+                        allLevel = points[0]
+                        allPoints = points[1]
+                        monthLevel = points[2]
+                        monthPoints = points[3]
 
-                    if floor((59.8 * sqrt(allPoints) - 59.8) / 120) > allLevel:
-                        level = floor((59.8 * sqrt(allPoints) - 59.8) / 120)
-                        updateLevel = f"UPDATE Levels SET Level = {level} WHERE User = {user.id}"
-                        creditBonus = ceil(allPoints * .05)
-                        updateCredit = f"UPDATE Credits SET Credits = Credits + {creditBonus} WHERE User = {user.id}"
-                        await DB.execute(updateLevel, DBConn)
-                        await DB.execute(updateCredit, DBConn)
-                        await message.channel.send(f"<@{user.id}> Level Up! You are at level {level}. You earned `{creditBonus}` credits!")
+                        if floor((59.8 * sqrt(allPoints) - 59.8) / 120) > allLevel:
+                            level = floor((59.8 * sqrt(allPoints) - 59.8) / 120)
+                            updateLevel = f"UPDATE Levels SET Level = {level} WHERE User = {user.id}"
+                            creditBonus = ceil(allPoints * .05)
+                            updateCredit = f"UPDATE Credits SET Credits = Credits + {creditBonus} WHERE User = {user.id}"
+                            await DB.execute(updateLevel, DBConn)
+                            await DB.execute(updateCredit, DBConn)
+                            await message.channel.send(f"<@{user.id}> Level Up! You are at level {level}. You earned `{creditBonus}` credits!")
 
-                    if floor((59.8 * sqrt(monthPoints) - 59.8) / 120) > monthLevel:
-                        level = floor((59.8 * sqrt(monthPoints) - 59.8) / 120)
-                        updateLevel = f"UPDATE Levels SET MonthLevel = {level} WHERE User = {user.id}"
-                        await DB.execute(updateLevel, DBConn)
+                        if floor((59.8 * sqrt(monthPoints) - 59.8) / 120) > monthLevel:
+                            level = floor((59.8 * sqrt(monthPoints) - 59.8) / 120)
+                            updateLevel = f"UPDATE Levels SET MonthLevel = {level} WHERE User = {user.id}"
+                            await DB.execute(updateLevel, DBConn)
+
+    @commands.check
+    async def globally_block_dms(ctx):
+        return ctx.guild is not None
 
     @commands.Cog.listener()
     async def on_ready(self):

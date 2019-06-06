@@ -223,6 +223,10 @@ class Staff(commands.Cog, name="Staff Commands"):
             await asyncio.sleep(30)
             await pingRole.edit(reason="Announcement", mentionable=False)
 
+    @commands.check
+    async def globally_block_dms(ctx):
+        return ctx.guild is not None
+
     @commands.Cog.listener()
     async def on_ready(self):
         global DBConn

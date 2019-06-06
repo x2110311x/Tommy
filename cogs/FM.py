@@ -193,6 +193,10 @@ class FM(commands.Cog, name="FM Commands"):
             elif user is None:
                 await ctx.send("Please set your username with !setfm")
 
+    @commands.check
+    async def globally_block_dms(ctx):
+        return ctx.guild is not None
+
     @commands.Cog.listener()
     async def on_ready(self):
         global DBConn

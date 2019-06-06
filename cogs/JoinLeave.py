@@ -85,6 +85,10 @@ class JoinLeave(commands.Cog):
         global DBConn
         DBConn = await DB.connect()
 
+    @commands.check
+    async def globally_block_dms(ctx):
+        return ctx.guild is not None
+
 
 def setup(bot):
     bot.add_cog(JoinLeave(bot))
