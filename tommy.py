@@ -200,6 +200,8 @@ async def on_command_error(ctx, error):
         await ctx.send(f"Uhoh! The {error.name} extension is not loaded! Please contact x2110311x")
     elif isinstance(error, commands.CheckFailure):
         await ctx.send("You do not have permission to use this command!")
+    lif isinstance(error, commands.NoPrivateMessage):
+        await ctx.send("You can't use commands in DMs!")
     elif isinstance(error, commands.CommandNotFound):
         message = ctx.message.content[1:]
         cmdIndex = message.find(" ")
