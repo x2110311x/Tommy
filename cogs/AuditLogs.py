@@ -1,4 +1,5 @@
 import discord
+import io
 import time
 import yaml
 
@@ -51,16 +52,25 @@ class AuditLogs(commands.Cog, name="Audits"):
         if message.author != self.bot.user:
             embedDelete = discord.Embed(colour=0x753543)
             embedDelete.set_author(name=message.author.name, icon_url=message.author.avatar_url)
-            embedDelete.add_field(name="Message deleted!", value=message.content, inline=False)
+            if message.content != "" and message.content is not None:
+                embedDelete.add_field(name="Message deleted!", value=message.content, inline=False)
             embedDelete.add_field(name="In Channel", value=message.channel.name, inline=False)
             dateCreated = message.created_at.strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
             embedDelete.add_field(name="Message Created At", value=dateCreated, inline=False)
             dateDeleted = datetime.utcfromtimestamp(int(time.time())).strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
             embedDelete.add_field(name="Message Deleted At", value=dateDeleted, inline=False)
             embedDelete.set_footer(text=f"© x2110311x. Original message ID: {message.id}")
-
             deleteLog = self.bot.get_channel(config['delete-log'])
-            await deleteLog.send(embed=embedDelete)
+
+            if len(message.attachments) > 0:
+                imgEmbed = message.attachments[0]
+                img = io.BytesIO()
+                await imgEmbed.save(img, use_cached=True)
+                sendFile = discord.File(fp=img, filename="deleted.png")
+                embedDelete.set_image(url="attachment://deleted.png")
+                await deleteLog.send(file=sendFile, embed=embedDelete)
+            else:
+                await deleteLog.send(embed=embedDelete)
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
