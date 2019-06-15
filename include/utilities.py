@@ -16,7 +16,12 @@ def seconds_to_units(seconds):  # convert seconds int to h/m/s string
             if hours >= 24:
                 days = int(hours / 24)
                 hoursremain = int(hours - (days * 24))
-                return f"{days} days, {hoursremain} hours, {minremain} minutes, and {secremain} seconds"
+                if days >= 7:
+                    weeks = int(days / 7)
+                    daysremain = int(days - (weeks * 7))
+                    return f"{weeks} weeks, {daysremain} days, {hoursremain} hours, {minremain} minutes, and {secremain} seconds"
+                else:
+                    return f"{days} days, {hoursremain} hours, {minremain} minutes, and {secremain} seconds"
             else:
                 return f"{hours} hours, {minremain} minutes, and {secremain} seconds"
         else:

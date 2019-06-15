@@ -101,7 +101,7 @@ FM:
 Reminders:
   remind:
     brief: "Set a reminder for yourself"
-    usage: "<minutes> <reason> \nMust be an integer for minutes"
+    usage: "<reason>, <time> \nMust include the comma. Specify time as `#w #d #h #m #s`. You do not have to enter units you don't need. Enter a space between each"
   myreminders:
     brief: "View your upcoming reminders"
     usage: ""
