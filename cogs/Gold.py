@@ -1,5 +1,7 @@
 import asyncio
 import discord
+import io
+import requests
 import time
 import yaml
 
@@ -57,13 +59,25 @@ class Gold(commands.Cog, name="Gilding"):
                                 embedGold = discord.Embed(colour=0x753543)
                                 embedGold.set_author(
                                     name=message.author.name, icon_url=message.author.avatar_url)
-                                embedGold.add_field(
-                                    name="Message", value=message.content, inline=False)
+                                if message.content != "" and message.content is not None:
+                                    embedGold.add_field(
+                                        name="Message", value=message.content, inline=False)
                                 embedGold.add_field(
                                     name="In Channel", value=message.channel.name, inline=False)
                                 embedGold.add_field(name="Given by", value=user.name, inline=False)
+
                                 goldChannel = self.bot.get_channel(config['gold_Channel'])
-                                goldMsg = await goldChannel.send(embed=embedGold)
+                                if len(message.attachments) > 0:
+                                    imgEmbed = message.attachments[0]
+                                    imgUrl = requests.get(imgEmbed.url)
+                                    img = io.BytesIO(imgUrl.content)
+                                    img.seek(0)
+                                    sendFile = discord.File(fp=img, filename="gold.png")
+                                    embedGold.set_image(url="attachment://gold.png")
+                                    goldMsg = await goldChannel.send(file=sendFile, embed=embedGold)
+                                else:
+                                    goldMsg = await goldChannel.send(file=sendFile, embed=embedGold)
+
                                 await goldMsg.add_reaction("⬆")
                                 await goldMsg.add_reaction("⬇")
 
