@@ -63,7 +63,7 @@ class Reminders(commands.Cog, name="Reminder Commands"):
             remindInsert = f"INSERT INTO Reminders (User, Reminder, Date) VALUES ({author.id},'{remindReason}',{remindEpoch})"
             await DB.execute(remindInsert, DBConn)
             timeToRemind = utilities.seconds_to_units(int(remindEpoch - time.time()) + 1)
-            await ctx.send(f"You will be reminded in {timeToRemind} minutes for `{remindReason}`")
+            await ctx.send(f"You will be reminded in {timeToRemind} for `{remindReason}`")
         except ValueError:
             await ctx.send("Please do not use decimals")
 
