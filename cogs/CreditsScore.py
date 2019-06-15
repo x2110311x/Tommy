@@ -272,7 +272,7 @@ class CreditsScore(commands.Cog, name="Credits, Score and Rank Commands"):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if ctx.guild is not None:
+        if message.guild is not None:
             user = message.author
             timeSelect = f"SELECT NextPoint FROM Levels WHERE User ={user.id}"
             nextPoint = await DB.select_one(timeSelect, DBConn)
