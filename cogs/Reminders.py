@@ -85,7 +85,7 @@ class Reminders(commands.Cog, name="Reminder Commands"):
                     seconds = int(remindTimeStr[remindTimeStr.find(" "):remindTimeStr.find("s")])
                     remindEpoch += seconds
 
-                if remindEpoch == 1:
+                if remindEpoch == 0:
                     await ctx.send("You didn't specify a unit of time!")
                 else:
                     author = ctx.message.author
