@@ -85,11 +85,14 @@ class Reminders(commands.Cog, name="Reminder Commands"):
                     seconds = int(remindTimeStr[remindTimeStr.find(" "):remindTimeStr.find("s")])
                     remindEpoch += seconds
 
-                author = ctx.message.author
-                remindInsert = f"INSERT INTO Reminders (User, Reminder, Date) VALUES ({author.id},'{remindReason}',{remindEpoch})"
-                await DB.execute(remindInsert, DBConn)
-                timeToRemind = utilities.seconds_to_units(int(remindEpoch - time.time()) + 1)
-                await ctx.send(f"You will be reminded in {timeToRemind} for `{remindReason}`")
+                if remindEpoch == 1:
+                    await ctx.send("You didn't specify a unit of time!")
+                else:
+                    author = ctx.message.author
+                    remindInsert = f"INSERT INTO Reminders (User, Reminder, Date) VALUES ({author.id},'{remindReason}',{remindEpoch})"
+                    await DB.execute(remindInsert, DBConn)
+                    timeToRemind = utilities.seconds_to_units(int(remindEpoch - time.time()) + 1)
+                    await ctx.send(f"You will be reminded in {timeToRemind} for `{remindReason}`")
         except ValueError:
             await ctx.send("An error occured. You may have used decimals. Don't")
 
