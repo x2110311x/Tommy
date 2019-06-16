@@ -54,41 +54,44 @@ class Reminders(commands.Cog, name="Reminder Commands"):
     @commands.command(brief=helpInfo['remind']['brief'], usage=helpInfo['remind']['usage'])
     async def remind(self, ctx, *, remindReason):
         try:
-            remindTimeStr = remindReason[remindReason.find(","):]
-            remindReason = remindReason[:remindReason.find(",")]
-            remindTime = 0
-            if remindTimeStr.find("w") != -1:
-                weeks = int(remindTimeStr[remindTimeStr.find(" "):remindTimeStr.find("w")])
-                remindTime += weeks * 10080
-                remindTimeStr = remindTimeStr[remindTimeStr.find("w"):]
+            if remindReason.find(",") == -1:
+                await ctx.send("You forgot the comma!")
+            else:
+                remindTimeStr = remindReason[remindReason.find(","):]
+                remindReason = remindReason[:remindReason.find(",")]
+                remindTime = 0
+                if remindTimeStr.find("w") != -1:
+                    weeks = int(remindTimeStr[remindTimeStr.find(" "):remindTimeStr.find("w")])
+                    remindTime += weeks * 10080
+                    remindTimeStr = remindTimeStr[remindTimeStr.find("w"):]
 
-            if remindTimeStr.find("d") != -1:
-                days = int(remindTimeStr[remindTimeStr.find(" "):remindTimeStr.find("d")])
-                remindTime += days * 1440
-                remindTimeStr = remindTimeStr[remindTimeStr.find("d"):]
+                if remindTimeStr.find("d") != -1:
+                    days = int(remindTimeStr[remindTimeStr.find(" "):remindTimeStr.find("d")])
+                    remindTime += days * 1440
+                    remindTimeStr = remindTimeStr[remindTimeStr.find("d"):]
 
-            if remindTimeStr.find("h") != -1:
-                hours = int(remindTimeStr[remindTimeStr.find(" "):remindTimeStr.find("h")])
-                remindTime += hours * 60
-                remindTimeStr = remindTimeStr[remindTimeStr.find("h"):]
+                if remindTimeStr.find("h") != -1:
+                    hours = int(remindTimeStr[remindTimeStr.find(" "):remindTimeStr.find("h")])
+                    remindTime += hours * 60
+                    remindTimeStr = remindTimeStr[remindTimeStr.find("h"):]
 
-            if remindTimeStr.find("m") != -1:
-                minutes = int(remindTimeStr[remindTimeStr.find(" "):remindTimeStr.find("m")])
-                remindTime += minutes
-                remindTimeStr = remindTimeStr[remindTimeStr.find("m"):]
+                if remindTimeStr.find("m") != -1:
+                    minutes = int(remindTimeStr[remindTimeStr.find(" "):remindTimeStr.find("m")])
+                    remindTime += minutes
+                    remindTimeStr = remindTimeStr[remindTimeStr.find("m"):]
 
-            remindEpoch = int(time.time()) + (int(remindTime) * 60)
-            if remindTimeStr.find("s") != -1:
-                seconds = int(remindTimeStr[remindTimeStr.find(" "):remindTimeStr.find("s")])
-                remindEpoch += seconds
+                remindEpoch = int(time.time()) + (int(remindTime) * 60)
+                if remindTimeStr.find("s") != -1:
+                    seconds = int(remindTimeStr[remindTimeStr.find(" "):remindTimeStr.find("s")])
+                    remindEpoch += seconds
 
-            author = ctx.message.author
-            remindInsert = f"INSERT INTO Reminders (User, Reminder, Date) VALUES ({author.id},'{remindReason}',{remindEpoch})"
-            await DB.execute(remindInsert, DBConn)
-            timeToRemind = utilities.seconds_to_units(int(remindEpoch - time.time()) + 1)
-            await ctx.send(f"You will be reminded in {timeToRemind} for `{remindReason}`")
+                author = ctx.message.author
+                remindInsert = f"INSERT INTO Reminders (User, Reminder, Date) VALUES ({author.id},'{remindReason}',{remindEpoch})"
+                await DB.execute(remindInsert, DBConn)
+                timeToRemind = utilities.seconds_to_units(int(remindEpoch - time.time()) + 1)
+                await ctx.send(f"You will be reminded in {timeToRemind} for `{remindReason}`")
         except ValueError:
-            await ctx.send("Please do not use decimals")
+            await ctx.send("An error occured. You may have used decimals. Don't")
 
     @commands.command(brief=helpInfo['myreminders']['brief'], usage=helpInfo['myreminders']['usage'], alias="myreminds")
     async def myreminders(self, ctx):
