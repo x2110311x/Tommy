@@ -24,14 +24,14 @@ class SaidNoError(Exception):
     pass
 
 
-async def processreminds(bot, DBConn):
+async def processreminds(bot, DBConnect):
     while bot.is_ready():
         # Wait 15 seconds to run again #
         await asyncio.sleep(15)
         curTime = int(time.time())
         # Reminders #
         remindSelect = f"SELECT User, Reminder FROM Reminders WHERE date <= {curTime}"
-        reminds = await DB.select_all(remindSelect, DBConn)
+        reminds = await DB.select_all(remindSelect, DBConnect)
         if len(reminds) > 0:
             for remind in reminds:
                 try:
@@ -39,7 +39,7 @@ async def processreminds(bot, DBConn):
                     reason = remind[1]
                     await user.send(f"You are being reminded for `{reason}`")
                     deleteReminder = f"DELETE FROM Reminders WHERE User = {user.id} AND Reminder = '{reason}' AND Date < {curTime}"
-                    await DB.execute(deleteReminder, DBConn)
+                    await DB.execute(deleteReminder, DBConnect)
                 except AttributeError:
                     chanTest = bot.get_channel(config['testing_Channel'])
                     print(f"Unable to remind user: {remind[0]}")

@@ -21,12 +21,12 @@ helpInfo = helpInfo['Staff']
 DBConn = None
 
 
-async def processmutes(bot, DBConn):
+async def processmutes(bot, DBConnect):
     while bot.is_ready():
         await asyncio.sleep(60)  # run every 60 seconds
         curTime = int(time.time())
         muteSelect = f"SELECT User FROM Mutes WHERE UnmuteTime <= {curTime}"
-        unmutes = await DB.select_all(muteSelect, DBConn)
+        unmutes = await DB.select_all(muteSelect, DBConnect)
         if len(unmutes) > 0:
             for userToUnmute in unmutes:
                 try:
@@ -38,20 +38,20 @@ async def processmutes(bot, DBConn):
                     await user.add_roles(defaultRole)
                     await user.send("You have been unmuted")
                     deleteMute = f"DELETE FROM Mutes WHERE User ={user.id}"
-                    await DB.execute(deleteMute, DBConn)
+                    await DB.execute(deleteMute, DBConnect)
                 except AttributeError:
                     chanTest = bot.get_channel(config['testing_Channel'])
                     print(f"Unable to unmute user: {userToUnmute[0]}")
                     await chanTestst.send(f"Unable to unmute user: {userToUnmute[0]}")
 
 
-async def processtempbans(bot, DBConn):
+async def processtempbans(bot, DBConnect):
     while bot.is_ready():
         await asyncio.sleep(300)  # run every 5 minutes
         curTime = int(time.time())
         # unban #
         banSelect = f"SELECT User FROM TempBans WHERE UnbanTime <= {curTime}"
-        unbans = await DB.select_all(banSelect, DBConn)
+        unbans = await DB.select_all(banSelect, DBConnect)
         if len(unbans) > 0:
             for userToUnban in unbans:
                 try:
@@ -63,7 +63,7 @@ async def processtempbans(bot, DBConn):
                     await guild.unban(user)
                     await user.send("You have been unbanned")
                     deleteMute = f"DELETE FROM TempBans WHERE User ={user.id}"
-                    await DB.execute(deleteMute, DBConn)
+                    await DB.execute(deleteMute, DBConnect)
                 except AttributeError:
                     chanTest = bot.get_channel(config['testing_Channel'])
                     print(f"Unable to unban user: {userToUnban[0]}")
