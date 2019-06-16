@@ -121,62 +121,6 @@ class Utilities(commands.Cog, name="Utility Commands"):
 bot.add_cog(Utilities(bot))
 
 
-async def minutetasks(DBConn):
-    while bot.is_ready():
-        # Wait 20 seconds to run again #
-        await asyncio.sleep(20)
-        # Unmutes #
-        curTime = int(time.time())
-        muteSelect = f"SELECT User FROM Mutes WHERE UnmuteTime <= {curTime}"
-        unmutes = await DB.select_all(muteSelect, DBConn)
-        if len(unmutes) > 0:
-            for userToUnmute in unmutes:
-                try:
-                    guild = bot.get_guild(config['server_ID'])
-                    muteRole = guild.get_role(config['mute_Role'])
-                    defaultRole = guild.get_role(config['join_Role'])
-                    user = guild.get_member(userToUnmute[0])
-                    await user.remove_roles(muteRole)
-                    await user.add_roles(defaultRole)
-                    await user.send("You have been unmuted")
-                    deleteMute = f"DELETE FROM Mutes WHERE User ={user.id}"
-                    await DB.execute(deleteMute, DBConn)
-                except AttributeError:
-                    print(f"Unable to unmute user: {userToUnmute[0]}")
-
-        # unban #
-        banSelect = f"SELECT User FROM TempBans WHERE UnbanTime <= {curTime}"
-        unbans = await DB.select_all(banSelect, DBConn)
-        if len(unbans) > 0:
-            for userToUnban in unbans:
-                try:
-                    guild = bot.get_guild(config['server_ID'])
-                    user = discord.Object(id=userToUnban[0])
-                    print(user)
-                    print("Attempting to unban")
-                    guild = bot.get_guild(config['server_ID'])
-                    await guild.unban(user)
-                    await user.send("You have been unbanned")
-                    deleteMute = f"DELETE FROM TempBans WHERE User ={user.id}"
-                    await DB.execute(deleteMute, DBConn)
-                except AttributeError:
-                    print(f"Unable to unban user: {userToUnban[0]}")
-
-        # Reminders #
-        remindSelect = f"SELECT User, Reminder FROM Reminders WHERE date <= {curTime}"
-        reminds = await DB.select_all(remindSelect, DBConn)
-        if len(reminds) > 0:
-            for remind in reminds:
-                try:
-                    user = bot.get_user(remind[0])
-                    reason = remind[1]
-                    await user.send(f"You are being reminded for `{reason}`")
-                    deleteReminder = f"DELETE FROM Reminders WHERE User = {user.id} AND Reminder = '{reason}' AND Date < {curTime}"
-                    await DB.execute(deleteReminder, DBConn)
-                except AttributeError:
-                    print(f"Unable to remind user: {remind[0]}")
-
-
 @bot.listen()
 async def on_command_error(ctx, error):
     if isinstance(error, commands.MissingRequiredArgument):
@@ -236,7 +180,7 @@ async def globally_block_dms(ctx):
     return ctx.guild is not None
 
 
-@bot.event
+@bot.listen()
 async def on_ready():
     print("Logged in")
 
@@ -250,6 +194,6 @@ async def on_ready():
     # Update Status #
     guild = bot.get_guild(config['server_ID'])
     await bot.change_presence(status=discord.Status.online, activity=discord.Game(f"with {guild.member_count - 3} members"))
-    await minutetasks(DBConn)
+
 
 bot.run(config['token'], bot=True, Reconnect=True)

@@ -23,6 +23,26 @@ class SaidNoError(Exception):
     pass
 
 
+async def processreminds(bot, DBConn):
+    while bot.is_ready():
+        # Wait 15 seconds to run again #
+        await asyncio.sleep(15)
+        curTime = int(time.time)
+        # Reminders #
+        remindSelect = f"SELECT User, Reminder FROM Reminders WHERE date <= {curTime}"
+        reminds = await DB.select_all(remindSelect, DBConn)
+        if len(reminds) > 0:
+            for remind in reminds:
+                try:
+                    user = bot.get_user(remind[0])
+                    reason = remind[1]
+                    await user.send(f"You are being reminded for `{reason}`")
+                    deleteReminder = f"DELETE FROM Reminders WHERE User = {user.id} AND Reminder = '{reason}' AND Date < {curTime}"
+                    await DB.execute(deleteReminder, DBConn)
+                except AttributeError:
+                    print(f"Unable to remind user: {remind[0]}")
+
+
 class Reminders(commands.Cog, name="Reminder Commands"):
     def __init__(self, bot):
         self.bot = bot
@@ -91,6 +111,7 @@ class Reminders(commands.Cog, name="Reminder Commands"):
     async def on_ready(self):
         global DBConn
         DBConn = await DB.connect()
+        await processreminds(self.bot, DBConn)
 
 
 def setup(bot):

@@ -21,6 +21,51 @@ helpInfo = helpInfo['Staff']
 DBConn = None
 
 
+async def processmutes(bot, DBConn):
+    while bot.is_ready():
+        await asyncio.sleep(60)  # run every 60 seconds
+        curTime = int(time.time())
+        muteSelect = f"SELECT User FROM Mutes WHERE UnmuteTime <= {curTime}"
+        unmutes = await DB.select_all(muteSelect, DBConn)
+        if len(unmutes) > 0:
+            for userToUnmute in unmutes:
+                try:
+                    guild = bot.get_guild(config['server_ID'])
+                    muteRole = guild.get_role(config['mute_Role'])
+                    defaultRole = guild.get_role(config['join_Role'])
+                    user = guild.get_member(userToUnmute[0])
+                    await user.remove_roles(muteRole)
+                    await user.add_roles(defaultRole)
+                    await user.send("You have been unmuted")
+                    deleteMute = f"DELETE FROM Mutes WHERE User ={user.id}"
+                    await DB.execute(deleteMute, DBConn)
+                except AttributeError:
+                    print(f"Unable to unmute user: {userToUnmute[0]}")
+
+
+async def processtempbans(bot, DBConn):
+    while bot.is_ready():
+        await asyncio.sleep(300)  # run every 5 minutes
+        curTime = int(time.time())
+        # unban #
+        banSelect = f"SELECT User FROM TempBans WHERE UnbanTime <= {curTime}"
+        unbans = await DB.select_all(banSelect, DBConn)
+        if len(unbans) > 0:
+            for userToUnban in unbans:
+                try:
+                    guild = bot.get_guild(config['server_ID'])
+                    user = discord.Object(id=userToUnban[0])
+                    print(user)
+                    print("Attempting to unban")
+                    guild = bot.get_guild(config['server_ID'])
+                    await guild.unban(user)
+                    await user.send("You have been unbanned")
+                    deleteMute = f"DELETE FROM TempBans WHERE User ={user.id}"
+                    await DB.execute(deleteMute, DBConn)
+                except AttributeError:
+                    print(f"Unable to unban user: {userToUnban[0]}")
+
+
 class Staff(commands.Cog, name="Staff Commands"):
     def __init__(self, bot):
         self.bot = bot
@@ -231,6 +276,12 @@ class Staff(commands.Cog, name="Staff Commands"):
     async def on_ready(self):
         global DBConn
         DBConn = await DB.connect()
+        await processtempbans(self.bot, DBConn)
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        global DBConn
+        await processmutes(self.bot, DBConn)
 
 
 def setup(bot):
