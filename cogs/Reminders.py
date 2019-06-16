@@ -80,7 +80,7 @@ class Reminders(commands.Cog, name="Reminder Commands"):
                     remindTime += minutes
                     remindTimeStr = remindTimeStr[remindTimeStr.find("m"):]
 
-                remindEpoch = int(time.time()) + (int(remindTime) * 60)
+                remindEpoch = int(int(remindTime) * 60)
                 if remindTimeStr.find("s") != -1:
                     seconds = int(remindTimeStr[remindTimeStr.find(" "):remindTimeStr.find("s")])
                     remindEpoch += seconds
@@ -88,6 +88,7 @@ class Reminders(commands.Cog, name="Reminder Commands"):
                 if remindEpoch < 5:
                     await ctx.send("You didn't specify a unit of time!")
                 else:
+                    remindEpoch = remindEpoch + int(time.time())
                     author = ctx.message.author
                     remindInsert = f"INSERT INTO Reminders (User, Reminder, Date) VALUES ({author.id},'{remindReason}',{remindEpoch})"
                     await DB.execute(remindInsert, DBConn)
