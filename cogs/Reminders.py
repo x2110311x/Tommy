@@ -28,7 +28,7 @@ async def processreminds(bot, DBConn):
     while bot.is_ready():
         # Wait 15 seconds to run again #
         await asyncio.sleep(15)
-        curTime = int(time.time)
+        curTime = int(time.time())
         # Reminders #
         remindSelect = f"SELECT User, Reminder FROM Reminders WHERE date <= {curTime}"
         reminds = await DB.select_all(remindSelect, DBConn)
