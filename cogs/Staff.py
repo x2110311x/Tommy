@@ -40,7 +40,9 @@ async def processmutes(bot, DBConn):
                     deleteMute = f"DELETE FROM Mutes WHERE User ={user.id}"
                     await DB.execute(deleteMute, DBConn)
                 except AttributeError:
+                    chanTest = bot.get_channel(config['testing_Channel'])
                     print(f"Unable to unmute user: {userToUnmute[0]}")
+                    await chanTestst.send(f"Unable to unmute user: {userToUnmute[0]}")
 
 
 async def processtempbans(bot, DBConn):
@@ -63,7 +65,9 @@ async def processtempbans(bot, DBConn):
                     deleteMute = f"DELETE FROM TempBans WHERE User ={user.id}"
                     await DB.execute(deleteMute, DBConn)
                 except AttributeError:
+                    chanTest = bot.get_channel(config['testing_Channel'])
                     print(f"Unable to unban user: {userToUnban[0]}")
+                    await chanTest.send(f"Unable to unban user: {userToUnban[0]}")
 
 
 class Staff(commands.Cog, name="Staff Commands"):

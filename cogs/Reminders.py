@@ -40,7 +40,9 @@ async def processreminds(bot, DBConn):
                     deleteReminder = f"DELETE FROM Reminders WHERE User = {user.id} AND Reminder = '{reason}' AND Date < {curTime}"
                     await DB.execute(deleteReminder, DBConn)
                 except AttributeError:
+                    chanTest = bot.get_channel(config['testing_Channel'])
                     print(f"Unable to remind user: {remind[0]}")
+                    await chanTest.send(f"Unable to remind user: {remind[0]}")
 
 
 class Reminders(commands.Cog, name="Reminder Commands"):
