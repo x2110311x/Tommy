@@ -284,6 +284,7 @@ class Staff(commands.Cog, name="Staff Commands"):
 
     @commands.Cog.listener()
     async def on_ready(self):
+        await asyncio.sleep(5)
         global DBConn
         await processmutes(self.bot, DBConn)
 
