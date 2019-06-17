@@ -141,6 +141,7 @@ class FM(commands.Cog, name="FM Commands"):
                 if fmreponse.status_code != 200:
                     raise ValueError(f"Could not get status. Reponse code: {fmreponse.status_code}")
                 else:
+                    msg1 = await ctx.send("Generating image...")
                     fmData = json.loads(fmreponse.text)
                     albumData = fmData['weeklyalbumchart']['album'][:9]
                     count = 0
@@ -181,6 +182,7 @@ class FM(commands.Cog, name="FM Commands"):
                     sendFile = discord.File(fp=imgByteArr, filename="weekly.png")
                     embedFM = discord.Embed(title=f"Top Weekly Albums for {username}", colour=0x753543, url=f"https://www.last.fm/user/{username}")
                     embedFM.set_image(url="attachment://weekly.png")
+                    await msg1.delete()
                     await ctx.send(file=sendFile, embed=embedFM)
             except ValueError:
                 await ctx.send("I couldn't find that user! Try resetting your username")
