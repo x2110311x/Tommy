@@ -49,6 +49,9 @@ Fun:
   yt:
     brief: "Search for a YouTube video"
     usage: "<search Query>"
+  avatar:
+    brief: "Get a user's avatar"
+    usage: "<user>\nmention the user"
 
 CreditsScore:
   daily:

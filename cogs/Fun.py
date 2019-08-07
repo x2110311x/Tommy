@@ -32,6 +32,12 @@ class Fun(commands.Cog, name="Fun Commands"):
         msgSearch = await ctx.send(F"Searching for `{query}` ")
         await msgSearch.edit(content=utilities.ytsearch(query))
 
+    @commands.command(brief=helpInfo['avatar']['brief'], usage=helpInfo['avatar']['usage'])
+    async def avater(self, ctx, *, user: discord.Member):
+        embedAvatar = discord.Embed(title=f"{user.name}'s avatar",colour=0x753543)
+        embedAvatar.set_image(url=user.avatar_url)
+        await ctx.send(embed=embedAvatar)
+
     @commands.check
     async def globally_block_dms(ctx):
         return ctx.guild is not None
