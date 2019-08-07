@@ -196,4 +196,4 @@ async def on_ready():
     await bot.change_presence(status=discord.Status.online, activity=discord.Game(f"with {guild.member_count - 3} members"))
 
 
-bot.run(config['token'], bot=True, Reconnect=True)
+bot.run(config['token'], bot=True, reconnect=True)
