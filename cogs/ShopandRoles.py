@@ -128,7 +128,7 @@ class ShopandRoles(commands.Cog, name="Role Commands"):
                 thisRole = guild.get_role(role[0])
                 ownedRoles.append(thisRole)
                 msgStr += f"{ownedRoles.index(thisRole)}.\t{thisRole.mention}\n"
-            msgStr += "\n\n Do `!chooserole <number>` to activate your chosen role"
+            msgStr += "\n\n Say the number to activate your chosen role"
             await ctx.send(msgStr)
             try:
                 usermsg = await self.bot.wait_for('message', check=check, timeout=30)
@@ -136,7 +136,8 @@ class ShopandRoles(commands.Cog, name="Role Commands"):
                     chosenRole = ownedRoles[int(usermsg.content)]
 
                     for role in ownedRoles:
-                        await ctx.message.author.remove_roles(role)
+                        if role.id != 555586664827715584:
+                            await ctx.message.author.remove_roles(role)
                     await ctx.message.author.add_roles(chosenRole)
                     await ctx.send(f"You activated the {chosenRole.mention} role!")
                 except IndexError:
@@ -210,14 +211,14 @@ class ShopandRoles(commands.Cog, name="Role Commands"):
                                                     creditsUpdate = f"UPDATE Credits SET Credits = Credits - 15000 WHERE User = {user.id}"
                                                     await DB.execute(creditsUpdate, DBConn)
                                                     await DB.execute(purchaseInsert, DBConn)
-                                                    await user.send(f"You have purchased the `{roleObj.name}` role. Please use `!chooserole` in <#560224467335249920> to activate it")
+                                                    await user.send(f"You have purchased the `{roleObj.name}` role. Please use `!chooserole` in <#555581400414289935> to activate it")
                                                 except SaidNoError:
                                                     await user.send("Role Purchase cancelled!")
                                                 except asyncio.TimeoutError:
                                                     await user.send("Timeout reached. Role Purchase cancelled!")
                                         else:
                                             if roleObj.id != 555586664827715584:
-                                                msg = await message.channel.send(f"{user.mention} You already have this role! Please use `!chooserole` in <#560224467335249920> to activate it")
+                                                msg = await message.channel.send(f"{user.mention} You already have this role! Please use `!chooserole` in <#555581400414289935> to activate it")
                                             else:
                                                 msg = await message.channel.send(f"{user.mention} You already have this role!")
                                             await asyncio.sleep(5)
@@ -246,13 +247,13 @@ class ShopandRoles(commands.Cog, name="Role Commands"):
                                                 creditsUpdate = f"UPDATE Credits SET Credits = Credits - 10000 WHERE User = {user.id}"
                                                 await DB.execute(creditsUpdate, DBConn)
                                                 await DB.execute(purchaseInsert, DBConn)
-                                                await user.send(f"You have purchased the `{roleObj.name}` role. Please use `!chooserole` in <#560224467335249920> to activate it")
+                                                await user.send(f"You have purchased the `{roleObj.name}` role. Please use `!chooserole` in <#555581400414289935> to activate it")
                                             except SaidNoError:
                                                 await user.send("Role Purchase cancelled!")
                                             except asyncio.TimeoutError:
                                                 await user.send("Timeout reached. Role Purchase cancelled!")
                                         else:
-                                            msg = await message.channel.send(f"{user.mention} You already have this role! Please use `!chooserole` in <#560224467335249920> to activate it")
+                                            msg = await message.channel.send(f"{user.mention} You already have this role! Please use `!chooserole` in <#555581400414289935> to activate it")
                                             await asyncio.sleep(5)
                                             await msg.delete()
                                     count += 1
@@ -279,13 +280,13 @@ class ShopandRoles(commands.Cog, name="Role Commands"):
                                                 creditsUpdate = f"UPDATE Credits SET Credits = Credits - 5000 WHERE User = {user.id}"
                                                 await DB.execute(creditsUpdate, DBConn)
                                                 await DB.execute(purchaseInsert, DBConn)
-                                                await user.send(f"You have purchased the `{roleObj.name}` role. Please use `!chooserole` in <#560224467335249920> to activate it")
+                                                await user.send(f"You have purchased the `{roleObj.name}` role. Please use `!chooserole` in <#555581400414289935> to activate it")
                                             except SaidNoError:
                                                 await user.send("Role Purchase cancelled!")
                                             except asyncio.TimeoutError:
                                                 await user.send("Timeout reached. Role Purchase cancelled!")
                                         else:
-                                            msg = await message.channel.send(f"{user.mention} You already have this role! Please use `!chooserole` in <#560224467335249920> to activate it")
+                                            msg = await message.channel.send(f"{user.mention} You already have this role! Please use `!chooserole` in <#555581400414289935> to activate it")
                                             await asyncio.sleep(5)
                                             await msg.delete()
                                     count += 1
