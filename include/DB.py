@@ -19,6 +19,9 @@ async def connect():
 
 
 async def select_one(query, pool):
+    query = query.replace("'", "")
+    query = query.replace('"', "")
+    query = query.replace(';', "")
     async with pool.acquire() as DBConn:
         async with DBConn.cursor() as cur:
             await cur.execute(query)
@@ -27,6 +30,9 @@ async def select_one(query, pool):
 
 
 async def select_all(query, pool):
+    query = query.replace("'", "")
+    query = query.replace('"', "")
+    query = query.replace(';', "")
     async with pool.acquire() as DBConn:
         async with DBConn.cursor() as cur:
             await cur.execute(query)
@@ -35,6 +41,9 @@ async def select_all(query, pool):
 
 
 async def execute(query, pool):
+    query = query.replace("'", "")
+    query = query.replace('"', "")
+    query = query.replace(';', "")
     async with pool.acquire() as DBConn:
         async with DBConn.cursor() as cur:
             await cur.execute(query)
