@@ -207,7 +207,7 @@ class Staff(commands.Cog, name="Staff Commands"):
 
     @commands.command(brief=helpInfo['userinfo']['brief'], usage=helpInfo['userinfo']['usage'])
     @commands.has_role(config['staff_Role'])
-    async def userinfo(self, ctx, user: discord.Member):
+    async def userinfo(self, ctx, *, user: discord.Member):
         selectWarn = f"SELECT count(date) FROM Warnings WHERE User={user.id}"
         selectDailies = f"SELECT DailyUses FROM Dailies WHERE User={user.id}"
         warns = await DB.select_one(selectWarn, DBConn)
@@ -239,7 +239,7 @@ class Staff(commands.Cog, name="Staff Commands"):
 
     @commands.command(brief=helpInfo['roleinfo']['brief'], usage=helpInfo['roleinfo']['usage'])
     @commands.has_role(config['staff_Role'])
-    async def roleinfo(self, ctx, role: discord.Role):
+    async def roleinfo(self, ctx, *, role: discord.Role):
         usersWithRole = 0
         for user in ctx.message.channel.guild.members:
             if role in user.roles:
