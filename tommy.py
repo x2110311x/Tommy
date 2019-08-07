@@ -89,20 +89,13 @@ class Utilities(commands.Cog, name="Utility Commands"):
     @commands.check(is_owner)
     async def update(self, ctx):
         await ctx.send("Updating Bot")
-        system('/bot/tommy/bot/bashscripts/update.sh')
-        await asyncio.sleep(30)
-        await ctx.send("Restarting Bot")
-        await bot.close()
-        DB.close(DBConn)
-        system('systemctl restart tommy')
+        system('sudo /bot/tommy/bot/bashscripts/update.sh')
 
     @commands.command(brief=helpInfo['update']['brief'], usage=helpInfo['update']['usage'])
     @commands.check(is_owner)
     async def restart(self, ctx):
         await ctx.send("Restarting Bot")
-        await bot.close()
-        DB.close(DBConn)
-        system('systemctl restart tommy')
+        system('sudo /bot/tommy/bot/bashscripts/restart.sh')
 
     @commands.command(brief=helpInfo['ping']['brief'], usage=helpInfo['ping']['usage'])
     async def ping(self, ctx):
