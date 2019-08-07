@@ -1,4 +1,5 @@
 import yaml
+import discord
 from discord.ext import commands
 from random import randint
 from include import txtutils
@@ -33,7 +34,7 @@ class Fun(commands.Cog, name="Fun Commands"):
         await msgSearch.edit(content=utilities.ytsearch(query))
 
     @commands.command(brief=helpInfo['avatar']['brief'], usage=helpInfo['avatar']['usage'])
-    async def avater(self, ctx, *, user: discord.Member):
+    async def avatar(self, ctx, *, user: discord.Member):
         embedAvatar = discord.Embed(title=f"{user.name}'s avatar",colour=0x753543)
         embedAvatar.set_image(url=user.avatar_url)
         await ctx.send(embed=embedAvatar)
