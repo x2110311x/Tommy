@@ -95,17 +95,19 @@ class AuditLogs(commands.Cog, name="Audits"):
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
-        emebdJoin = discord.Embed(colour=0x753543)
-        emebdJoin.set_author(name=member.name, icon_url=member.avatar_url)
-        emebdJoin.add_field(name="User Joined!", value=f"User ID {member.id}", inline=False)
+        embedJoin = discord.Embed(colour=0x753543)
+        embedJoin.set_author(name=member.name, icon_url=member.avatar_url)
+        embedJoin.add_field(name="User Joined!", value=f"User ID {member.id}", inline=False)
         dateJoined = member.joined_at.strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
-        emebdJoin.add_field(name="Joined At", value=dateJoined, inline=False)
+        embedJoin.add_field(name="Joined At", value=dateJoined, inline=False)
         dateCreated = member.created_at.strftime("%m/%d/%Y, %H:%M:%S") + " GMT"
-        emebdJoin.add_field(name="User Account Created At", value=dateCreated, inline=False)
-        emebdJoin.set_footer(text=f"© x2110311x. User ID {member.id}")
+        if int(time.time()) -604800 < member.created_at.timestamp():
+            dateCreated += "\n***ACCOUNT CREATED LESS THAN 1 WEEK AGO***"
+        embedJoin.add_field(name="User Account Created At", value=dateCreated, inline=False)
+        embedJoin.set_footer(text=f"© x2110311x. User ID {member.id}")
 
         joinLeaveLog = self.bot.get_channel(config['join-leave-log'])
-        await joinLeaveLog.send(embed=emebdJoin)
+        await joinLeaveLog.send(embed=embedJoin)
 
     @commands.Cog.listener()
     async def on_member_remove(self, member):
