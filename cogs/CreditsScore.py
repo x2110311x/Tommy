@@ -149,38 +149,41 @@ class CreditsScore(commands.Cog, name="Credits, Score and Rank Commands"):
 
     @commands.command(brief=helpInfo['donate']['brief'], usage=helpInfo['donate']['usage'])
     async def donate(self, ctx, user: discord.Member, amount):
-        if int(amount) <= 1000:
-            author = ctx.message.author
-            creditCheck = f"SELECT Credits FROM Credits WHERE User = {author.id}"
-            credits = await DB.select_one(creditCheck, DBConn)
-            if credits is not None:
-                if credits[0] >= int(amount):
-                    def check(m):
-                        if m.author == author and m.channel == ctx.message.channel:
-                            if m.content.lower() == 'yes':
-                                return True
-                            elif m.content.lower() == 'no':
-                                raise SaidNoError
+        if int(amount) > 0:
+            if int(amount) <= 1000:
+                author = ctx.message.author
+                creditCheck = f"SELECT Credits FROM Credits WHERE User = {author.id}"
+                credits = await DB.select_one(creditCheck, DBConn)
+                if credits is not None:
+                    if credits[0] >= int(amount):
+                        def check(m):
+                            if m.author == author and m.channel == ctx.message.channel:
+                                if m.content.lower() == 'yes':
+                                    return True
+                                elif m.content.lower() == 'no':
+                                    raise SaidNoError
+                                else:
+                                    return False
                             else:
                                 return False
-                        else:
-                            return False
-                    await ctx.send(f"Are you sure you want to donate `{amount} credits` to {user.mention}?")
-                    try:
-                        await self.bot.wait_for('message', check=check, timeout=30)
-                        updateDonator = f"UPDATE Credits SET Credits = Credits - {int(amount)} WHERE User = {author.id}"
-                        updateDonatee = f"UPDATE Credits SET Credits = Credits +{int(amount)} WHERE User = {user.id}"
-                        await DB.execute(updateDonator, DBConn)
-                        await DB.execute(updateDonatee, DBConn)
-                        await ctx.send(f"You donated {amount} credits to {user.mention}")
-                    except asyncio.TimeoutError:
-                        await ctx.send("Timeout reached. Donation cancelled!")
-                    except SaidNoError:
-                        await ctx.send("Donation cancelled")
-                else:
-                    await ctx.send("You do not have enough credits!")
+                        await ctx.send(f"Are you sure you want to donate `{amount} credits` to {user.mention}?")
+                        try:
+                            await self.bot.wait_for('message', check=check, timeout=30)
+                            updateDonator = f"UPDATE Credits SET Credits = Credits - {int(amount)} WHERE User = {author.id}"
+                            updateDonatee = f"UPDATE Credits SET Credits = Credits +{int(amount)} WHERE User = {user.id}"
+                            await DB.execute(updateDonator, DBConn)
+                            await DB.execute(updateDonatee, DBConn)
+                            await ctx.send(f"You donated {amount} credits to {user.mention}")
+                        except asyncio.TimeoutError:
+                            await ctx.send("Timeout reached. Donation cancelled!")
+                        except SaidNoError:
+                            await ctx.send("Donation cancelled")
+                    else:
+                        await ctx.send("You do not have enough credits!")
+            else:
+                await ctx.send("You can only donate 1000 credits at once")
         else:
-            await ctx.send("You can only donate 1000 credits at once")
+            await ctx.send("You can't donate negative credits")
 
     @commands.command(brief=helpInfo['alltop']['brief'], usage=helpInfo['alltop']['usage'])
     async def alltop(self, ctx, page=1):
