@@ -2,7 +2,7 @@ import asyncio
 import io
 import discord
 import requests
-import time
+from time import time
 import yaml
 
 from discord.ext import commands
