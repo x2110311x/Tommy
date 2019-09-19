@@ -96,11 +96,16 @@ class Staff(commands.Cog, name="Staff Commands"):
 
     @commands.command(brief=helpInfo['ban']['brief'], usage=helpInfo['ban']['usage'])
     @commands.has_role(config['staff_Role'])
-    async def ban(self, ctx, user: discord.Member):
+    async def ban(self, ctx, user: discord.Member, *, banreason=None):
         staffRole = self.bot.get_guild(
             config['server_ID']).get_role(config['staff_Role'])
         if staffRole not in user.roles:
-            await user.ban(reason=ctx.author.name)
+            if banreason is None:
+                await user.send("You have been banned.")
+                await user.ban(reason=ctx.author.name)
+            else:
+                await user.send(f"You have been banned for: {banreason}")
+                await user.ban(reason=banreason)
             await ctx.send(f"{user.mention} has been banned!")
         else:
             await ctx.send("You cannot ban another staff member!")
