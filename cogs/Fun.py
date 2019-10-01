@@ -40,9 +40,22 @@ class Fun(commands.Cog, name="Fun Commands"):
         embedAvatar = discord.Embed(title=f"{user.name}'s avatar", colour=0x753543)
         embedAvatar.set_image(url=user.avatar_url)
         await ctx.send(embed=embedAvatar)
+        
+    @commands.command(brief=helpInfo['spooky']['brief'], usage=helpInfo['spooky']['usage'])
+    async def spooky(self, ctx):
+        currentName = ctx.message.author.display_name
+        spookyname = f"🎃👻{currentName}👻🎃"
+        if currentName.find("🎃") == -1 and currentName.find("👻") == -1:
+            try:
+                await ctx.message.author.edit(nick=spookyname)
+                await ctx.send("Your name has been spookified!")
+            except:
+                await ctx.send(f"I could not set your nickname. Please copy and paste the following into your nickname:\n`{spookyname}`")
+        else:
+            await ctx.send("You've already been spookified!")
 
     @commands.check
-    async def globally_block_dms(ctx):
+    async def globally_block_dms(self, ctx):
         return ctx.guild is not None
 
 
