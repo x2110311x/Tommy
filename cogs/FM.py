@@ -110,7 +110,7 @@ class FM(commands.Cog, name="FM Commands"):
             except ValueError:
                 await ctx.send("I couldn't find that user! Try resetting your username")
             except Exception as e:
-                await ctx.send("Uh Oh! I couldn't get your status. Perhaps the username is not set correctly")
+                await ctx.send("Oh No!!! I couldn't get your status. Perhaps the username is not set correctly")
                 print(e)
         else:
             if len(ctx.message.mentions) > 0:
@@ -187,7 +187,7 @@ class FM(commands.Cog, name="FM Commands"):
             except ValueError:
                 await ctx.send("I couldn't find that user! Try resetting your username")
             except Exception as e:
-                await ctx.send("Uh Oh! I couldn't get your weekly. Perhaps the username is not set correctly")
+                await ctx.send("Oh No!!! I couldn't get your weekly. Perhaps the username is not set correctly")
                 print(e)
         else:
             if len(ctx.message.mentions) > 0:
