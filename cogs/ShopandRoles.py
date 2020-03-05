@@ -174,7 +174,7 @@ class ShopandRoles(commands.Cog, name="Role Commands"):
                         creditsSelect = f"SELECT Credits FROM Credits WHERE User ={user.id}"
                         credits = await DB.select_one(creditsSelect, DBConn)
                         if credits is not None:
-                            if credits[0] >= 15000:
+                            if credits[0] >= 5000:
                                 count = 0
                                 for role in shopRoles['Tier1']:
                                     if count == reactions.index(reaction.emoji):
@@ -232,7 +232,7 @@ class ShopandRoles(commands.Cog, name="Role Commands"):
                         creditsSelect = f"SELECT Credits FROM Credits WHERE User ={user.id}"
                         credits = await DB.select_one(creditsSelect, DBConn)
                         if credits is not None:
-                            if credits[0] >= 10000:
+                            if credits[0] >= 3000:
                                 count = 0
                                 for role in shopRoles['Tier2']:
                                     if count == reactions.index(reaction.emoji):
@@ -265,7 +265,7 @@ class ShopandRoles(commands.Cog, name="Role Commands"):
                         creditsSelect = f"SELECT Credits FROM Credits WHERE User ={user.id}"
                         credits = await DB.select_one(creditsSelect, DBConn)
                         if credits is not None:
-                            if credits[0] >= 5000:
+                            if credits[0] >= 1000:
                                 count = 0
                                 for role in shopRoles['Tier3']:
                                     if count == reactions.index(reaction.emoji):
