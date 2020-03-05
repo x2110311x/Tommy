@@ -13,87 +13,87 @@ Tier1:
   555612199133904896:
     name: 'Blood // Water'
     color: '8A0303'
-    price: 15000
+    price: 5000
   555612683563696170:
     name: 'Bury Me Face Down'
     color: 'FBBF54'
-    price: 15000
+    price: 5000
   555612247683235851:
     name: 'Despicable'
     color: 'A363D9'
-    price: 15000
+    price: 5000
   555612710365167647:
     name: 'Bills'
     color: '1F8B4C'
-    price: 15000
+    price: 5000
   684836425291792445:
     name: "Oh No!!!"
     color: '29c400'
-    price: 15000
+    price: 5000
   684836425291792445:
     name: 'Put Me Under'
     color: 'e72dcd'
-    price: 15000
+    price: 5000
   684836425291792445:
     name: 'Destroy Me'
     color: 'ffd100'
-    price: 15000
+    price: 5000
 
 
 Tier2:
   555611876881334273:
     name:  'Apologize'
     color: 'CD1414'
-    price: 10000
+    price: 3000
   555612523920097291:
     name: 'thoughts & prayers'
     color: '022C7A'
-    price: 10000
+    price: 3000
   574665904110174218:
     name: "Stigmata"
     color: "8A6BAE"
-    price: 10000
+    price: 3000
   555612272542875648:
     name: 'Overdose'
     color: '9BBB59'
-    price: 10000
+    price: 3000
   555612406072606721:
     name: 'War'
     color: 'DAB71F'
-    price: 10000
+    price: 3000
   684836425291792445:
     name: 'Die Young'
     color: 'fa4722'
-    price: 10000
+    price: 3000
   684836425291792445:
     name: 'Peaches'
     color: 'fd9e7f'
-    price: 10000
+    price: 3000
 
 
 Tier3:
   555612633038979083:
     name: 'Kiss Bang'
     color: 'FF6BA4'
-    price: 5000
+    price: 1000
   555612228485644300:
     name: 'Stick Up'
     color: '206694'
-    price: 5000
+    price: 1000
   555612080233775116:
     name: 'Darkside'
     color: '1A1333'
-    price: 5000
+    price: 1000
   555611944665481227:
     name: 'Is This What You Wanted'
     color: 'FF8838'
-    price: 5000
+    price: 1000
   555612040602058752:
     name: 'Fallin'
     color: '6FE0FF'
-    price: 5000
+    price: 1000
   684836425291792445:
     name: 'Rock Bottom'
     color: '4b70a3'
-    price: 5000
+    price: 1000
 ...
