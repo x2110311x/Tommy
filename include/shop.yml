@@ -26,19 +26,18 @@ Tier1:
     name: 'Bills'
     color: '1F8B4C'
     price: 15000
-  684836425291792445:
+  684834898162221084:
     name: "Oh No!!!"
     color: '29c400'
     price: 15000
-  684836425291792445:
+  684835354553221170:
     name: 'Put Me Under'
     color: 'e72dcd'
     price: 15000
-  684836425291792445:
+  684833372895314201:
     name: 'Destroy Me'
     color: 'ffd100'
     price: 15000
-
 
 Tier2:
   555611876881334273:
@@ -61,11 +60,11 @@ Tier2:
     name: 'War'
     color: 'DAB71F'
     price: 10000
-  684836425291792445:
+  684835672896438310:
     name: 'Die Young'
     color: 'fa4722'
     price: 10000
-  684836425291792445:
+  684833169861771348:
     name: 'Peaches'
     color: 'fd9e7f'
     price: 10000
@@ -92,7 +91,7 @@ Tier3:
     name: 'Fallin'
     color: '6FE0FF'
     price: 5000
-  684836425291792445:
+  684833857585020987:
     name: 'Rock Bottom'
     color: '4b70a3'
     price: 5000
