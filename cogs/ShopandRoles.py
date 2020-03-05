@@ -20,7 +20,7 @@ helpInfo = helpInfo['ShopandRoles']
 
 DBConn = None
 
-reactions = ['🇦', '🇧', '🇨', '🇩', '🇪']
+reactions = ['🇦', '🇧', '🇨', '🇩', '🇪', '🇫', '🇬', '🇭']
 
 
 class SaidNoError(Exception):
