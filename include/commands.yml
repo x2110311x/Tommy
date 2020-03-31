@@ -52,9 +52,9 @@ Fun:
   avatar:
     brief: "Get a user's avatar"
     usage: "<user>\nmention the user"
-  spooky:
-    brief: "Get some cool spooky emojis in your name for Halloween!"
-    usage: ""
+  color:
+    brief: "Visualize and get a color name from color code"
+    usage: "<color code>"
 
 CreditsScore:
   daily:

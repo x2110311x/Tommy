@@ -1,10 +1,14 @@
 import yaml
 import discord
+import io
 from discord.ext import commands
 from random import randint
 from include import txtutils
 from include import utilities
 from os.path import abspath
+from PIL import Image
+from colory.color import Color as xColor
+
 
 with open(abspath('./include/config.yml'), 'r') as configFile:
     config = yaml.safe_load(configFile)
@@ -41,18 +45,32 @@ class Fun(commands.Cog, name="Fun Commands"):
         embedAvatar.set_image(url=user.avatar_url)
         await ctx.send(embed=embedAvatar)
         
-    @commands.command(brief=helpInfo['spooky']['brief'], usage=helpInfo['spooky']['usage'])
-    async def spooky(self, ctx):
-        currentName = ctx.message.author.display_name
-        spookyname = f"🎃👻{currentName}👻🎃"
-        if currentName.find("🎃") == -1 and currentName.find("👻") == -1:
-            try:
-                await ctx.message.author.edit(nick=spookyname)
-                await ctx.send("Your name has been spookified!")
-            except:
-                await ctx.send(f"I could not set your nickname. Please copy and paste the following into your nickname:\n`{spookyname}`")
-        else:
-            await ctx.send("You've already been spookified!")
+    @commands.command(brief=helpInfo['color']['brief'], usage=helpInfo['color']['usage'], aliases=["colour"])
+    async def color(self, ctx, hexcode):
+        try:
+            if hexcode[0] == "#":
+                hexint = int(hexcode[1:], 16)
+            else:
+                hexint = int(hexcode, 16)
+        except ValueError:
+            await ctx.send("That's not a valid color code!")
+            return
+        if hexcode[0] != "#":
+            hexcode = f"#{hexcode}"
+        if len(hexcode) != 7:
+            await ctx.send("That's not a valid color code!")
+            return
+        colorObj = xColor(hexcode,'wiki')
+        colorName = colorObj.name
+        colorImage = Image.new("RGB", (100,100), hexcode)
+        imgByteArr = io.BytesIO()
+        colorImage.save(imgByteArr, format="PNG")
+        imgByteArr.seek(0)
+        imgFile = discord.File(fp=imgByteArr, filename="color.png")
+        colorEm = discord.Embed(title=hexcode, colour=hexint)
+        colorEm.set_image(url="attachment://color.png")
+        colorEm.set_author(name=colorName)
+        await ctx.send(file=imgFile, embed=colorEm)
 
     @commands.check
     async def globally_block_dms(self, ctx):
