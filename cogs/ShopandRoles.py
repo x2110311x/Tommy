@@ -122,14 +122,14 @@ class ShopandRoles(commands.Cog, name="Role Commands"):
         roleSelect = f"SELECT Role FROM OwnedRoles WHERE User={ctx.message.author.id}"
         rolesResult = await DB.select_all(roleSelect, DBConn)
         if len(rolesResult) > 0:
-            msgStr = "**Your Owned Roles:** \n"
+            roleEm = discord.Embed(title="Your Owned Roles", colour=0x753543)
             ownedRoles = []
             for role in rolesResult:
                 thisRole = guild.get_role(role[0])
                 ownedRoles.append(thisRole)
-                msgStr += f"{ownedRoles.index(thisRole)}.\t{thisRole.mention}\n"
-            msgStr += "\n\n Say the number to activate your chosen role"
-            await ctx.send(msgStr)
+                roleEm.add_field(name=f"{ownedRoles.index(thisRole)}. {thisRole.name}", value=f"{thisRole.mention}", inline=False)
+            roleEm.set_footer(text="Say the number to activate your chosen role", icon_url=self.bot.user.avatar_url)
+            await ctx.send(embed=roleEm)
             try:
                 usermsg = await self.bot.wait_for('message', check=check, timeout=30)
                 try:
@@ -139,7 +139,7 @@ class ShopandRoles(commands.Cog, name="Role Commands"):
                         if role.id != 555586664827715584:
                             await ctx.message.author.remove_roles(role)
                     await ctx.message.author.add_roles(chosenRole)
-                    await ctx.send(f"You activated the {chosenRole.mention} role!")
+                    await ctx.send(f"You activated the **{chosenRole.name}** role!")
                 except IndexError:
                     await ctx.send(f"{usermsg.content} wasn't an option. Run the command again")
                     userUpdate = f"UPDATE Users Set PrimaryRole = {ctx.message.author.top_role.id} WHERE ID = {ctx.message.author.id}"
