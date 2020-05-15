@@ -186,11 +186,11 @@ class ShopandRoles(commands.Cog, name="Role Commands"):
                                                 levelSelect = f"SELECT Level FROM Levels WHERE User ={user.id}"
                                                 levelsResult = await DB.select_one(levelSelect, DBConn)
                                                 if levelsResult[0] >= shopRoles['Tier1'][role]['level']:
-                                                    await user.send("Would you like to purchase `Toe Tag` for `15000 credits`?")
+                                                    await user.send("Would you like to purchase `Toe Tag` for `5000 credits`?")
                                                     try:
                                                         await self.bot.wait_for('message', check=check, timeout=30)
                                                         purchaseInsert = f"INSERT INTO OwnedRoles (PurchaseDate, Role, User) VALUES ({int(time.time())},{roleObj.id},{user.id})"
-                                                        creditsUpdate = f"UPDATE Credits SET Credits = Credits - 15000 WHERE User = {user.id}"
+                                                        creditsUpdate = f"UPDATE Credits SET Credits = Credits - 5000 WHERE User = {user.id}"
                                                         await DB.execute(creditsUpdate, DBConn)
                                                         await DB.execute(purchaseInsert, DBConn)
                                                         await user.add_roles(roleObj)
@@ -204,11 +204,11 @@ class ShopandRoles(commands.Cog, name="Role Commands"):
                                                     await asyncio.sleep(5)
                                                     await msg.delete()
                                             else:
-                                                await user.send(f"Would you like to buy the `{roleObj.name}` role for `15000 credits`?")
+                                                await user.send(f"Would you like to buy the `{roleObj.name}` role for `5000 credits`?")
                                                 try:
                                                     await self.bot.wait_for('message', check=check, timeout=30)
                                                     purchaseInsert = f"INSERT INTO OwnedRoles (PurchaseDate, Role, User) VALUES ({int(time.time())},{roleObj.id},{user.id})"
-                                                    creditsUpdate = f"UPDATE Credits SET Credits = Credits - 15000 WHERE User = {user.id}"
+                                                    creditsUpdate = f"UPDATE Credits SET Credits = Credits - 5000 WHERE User = {user.id}"
                                                     await DB.execute(creditsUpdate, DBConn)
                                                     await DB.execute(purchaseInsert, DBConn)
                                                     await user.send(f"You have purchased the `{roleObj.name}` role. Please use `!chooserole` in <#555581400414289935> to activate it")
@@ -240,11 +240,11 @@ class ShopandRoles(commands.Cog, name="Role Commands"):
                                         roleSelect = f"SELECT count(*) FROM OwnedRoles WHERE User={user.id} AND Role = {roleObj.id}"
                                         roleResult = await DB.select_one(roleSelect, DBConn)
                                         if roleResult[0] == 0:
-                                            await user.send(f"Would you like to buy the `{roleObj.name}` role for `10000 credits`?")
+                                            await user.send(f"Would you like to buy the `{roleObj.name}` role for `3000 credits`?")
                                             try:
                                                 await self.bot.wait_for('message', check=check, timeout=30)
                                                 purchaseInsert = f"INSERT INTO OwnedRoles (PurchaseDate, Role, User) VALUES ({int(time.time())},{roleObj.id},{user.id})"
-                                                creditsUpdate = f"UPDATE Credits SET Credits = Credits - 10000 WHERE User = {user.id}"
+                                                creditsUpdate = f"UPDATE Credits SET Credits = Credits - 3000 WHERE User = {user.id}"
                                                 await DB.execute(creditsUpdate, DBConn)
                                                 await DB.execute(purchaseInsert, DBConn)
                                                 await user.send(f"You have purchased the `{roleObj.name}` role. Please use `!chooserole` in <#555581400414289935> to activate it")
@@ -273,11 +273,11 @@ class ShopandRoles(commands.Cog, name="Role Commands"):
                                         roleSelect = f"SELECT count(*) FROM OwnedRoles WHERE User={user.id} AND Role = {roleObj.id}"
                                         roleResult = await DB.select_one(roleSelect, DBConn)
                                         if roleResult[0] == 0:
-                                            await user.send(f"Would you like to buy the `{roleObj.name}` role for `5000 credits`?")
+                                            await user.send(f"Would you like to buy the `{roleObj.name}` role for `1000 credits`?")
                                             try:
                                                 await self.bot.wait_for('message', check=check, timeout=30)
                                                 purchaseInsert = f"INSERT INTO OwnedRoles (PurchaseDate, Role, User) VALUES ({int(time.time())},{roleObj.id},{user.id})"
-                                                creditsUpdate = f"UPDATE Credits SET Credits = Credits - 5000 WHERE User = {user.id}"
+                                                creditsUpdate = f"UPDATE Credits SET Credits = Credits - 1000 WHERE User = {user.id}"
                                                 await DB.execute(creditsUpdate, DBConn)
                                                 await DB.execute(purchaseInsert, DBConn)
                                                 await user.send(f"You have purchased the `{roleObj.name}` role. Please use `!chooserole` in <#555581400414289935> to activate it")
