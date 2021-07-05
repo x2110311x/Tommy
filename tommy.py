@@ -25,7 +25,9 @@ with open(abspath('./include/config.yml'), 'r') as configFile:
     config = yaml.safe_load(configFile)
 
 intStartTime = int(time.time())  # time the bot started at
-bot = commands.Bot(command_prefix="!")
+intents = discord.Intents.all()
+intents.members = True
+bot = commands.Bot(command_prefix="!", intents=intents)
 
 DBConn = None
 
@@ -41,7 +43,7 @@ startup_extensions = ["cogs.JoinLeave",
                       "cogs.ShopandRoles",
                       "cogs.SocialMedia",
                       "cogs.SuggestReport",
-                      "cogs.concert"]
+                      "cogs.Giveaway"]
 
 for extension in startup_extensions:
     bot.load_extension(extension)

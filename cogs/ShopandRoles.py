@@ -1,6 +1,7 @@
 import asyncio
 import discord
 import time
+from typing_extensions import TypedDict    
 import yaml
 
 from discord.ext import commands
@@ -20,7 +21,7 @@ helpInfo = helpInfo['ShopandRoles']
 
 DBConn = None
 
-reactions = ['🇦', '🇧', '🇨', '🇩', '🇪']
+reactions = ['🇦', '🇧', '🇨', '🇩', '🇪', '🇫', '🇬', '🇭']
 
 
 class SaidNoError(Exception):
@@ -75,6 +76,11 @@ async def shop_messages(bot):
         await msgT3.add_reaction(reactions[x])
 
 
+class ReactionPayload(TypedDict):
+    count: int
+    me: bool
+    emoji: str
+
 class ShopandRoles(commands.Cog, name="Role Commands"):
     def __init__(self, bot):
         self.bot = bot
@@ -122,14 +128,14 @@ class ShopandRoles(commands.Cog, name="Role Commands"):
         roleSelect = f"SELECT Role FROM OwnedRoles WHERE User={ctx.message.author.id}"
         rolesResult = await DB.select_all(roleSelect, DBConn)
         if len(rolesResult) > 0:
-            msgStr = "**Your Owned Roles:** \n"
+            roleEm = discord.Embed(title="Your Owned Roles", colour=0x753543)
             ownedRoles = []
             for role in rolesResult:
                 thisRole = guild.get_role(role[0])
                 ownedRoles.append(thisRole)
-                msgStr += f"{ownedRoles.index(thisRole)}.\t{thisRole.mention}\n"
-            msgStr += "\n\n Say the number to activate your chosen role"
-            await ctx.send(msgStr)
+                roleEm.add_field(name=f"{ownedRoles.index(thisRole)}. {thisRole.name}", value=f"{thisRole.mention}", inline=False)
+            roleEm.set_footer(text="Say the number to activate your chosen role", icon_url=self.bot.user.avatar_url)
+            await ctx.send(embed=roleEm)
             try:
                 usermsg = await self.bot.wait_for('message', check=check, timeout=30)
                 try:
@@ -139,7 +145,7 @@ class ShopandRoles(commands.Cog, name="Role Commands"):
                         if role.id != 555586664827715584:
                             await ctx.message.author.remove_roles(role)
                     await ctx.message.author.add_roles(chosenRole)
-                    await ctx.send(f"You activated the {chosenRole.mention} role!")
+                    await ctx.send(f"You activated the **{chosenRole.name}** role!")
                 except IndexError:
                     await ctx.send(f"{usermsg.content} wasn't an option. Run the command again")
                     userUpdate = f"UPDATE Users Set PrimaryRole = {ctx.message.author.top_role.id} WHERE ID = {ctx.message.author.id}"
@@ -153,7 +159,7 @@ class ShopandRoles(commands.Cog, name="Role Commands"):
             await ctx.send("You don't have any roles to choose from!")
 
     @commands.Cog.listener()
-    async def on_reaction_add(self, reaction, user):
+    async def on_raw_reaction_add(self, payload):
         def check(m):
             if m.author == user and m.channel == user.dm_channel:
                 if m.content.lower() == 'yes':
@@ -164,17 +170,23 @@ class ShopandRoles(commands.Cog, name="Role Commands"):
                     return False
             else:
                 return False
-        if user != self.bot.user:
+        if payload.user_id != self.bot.user.id:
+            channel = self.bot.get_guild(config['server_ID']).get_channel(payload.channel_id)
             guild = self.bot.get_guild(config['server_ID'])
-            message = reaction.message
+            user = guild.get_member(payload.user_id)
+            message = await channel.fetch_message(payload.message_id)
+            emoji = str(payload.emoji)
+            reactpayload : ReactionPayload = {'count': 0, 'me': False, 'emoji': str(payload.emoji)}
+            reaction = discord.Reaction(message=message, data=reactpayload, emoji=str(payload.emoji))
             if message.channel.id == config['shop_Channel']:
                 if reaction.emoji in reactions:
                     embed = message.embeds[0]
                     if embed.title == "Tier 1 Roles":
+                        print("t1")
                         creditsSelect = f"SELECT Credits FROM Credits WHERE User ={user.id}"
                         credits = await DB.select_one(creditsSelect, DBConn)
                         if credits is not None:
-                            if credits[0] >= 15000:
+                            if credits[0] >= 5000:
                                 count = 0
                                 for role in shopRoles['Tier1']:
                                     if count == reactions.index(reaction.emoji):
@@ -186,11 +198,11 @@ class ShopandRoles(commands.Cog, name="Role Commands"):
                                                 levelSelect = f"SELECT Level FROM Levels WHERE User ={user.id}"
                                                 levelsResult = await DB.select_one(levelSelect, DBConn)
                                                 if levelsResult[0] >= shopRoles['Tier1'][role]['level']:
-                                                    await user.send("Would you like to purchase `Toe Tag` for `15000 credits`?")
+                                                    await user.send("Would you like to purchase `Toe Tag` for `5000 credits`?")
                                                     try:
                                                         await self.bot.wait_for('message', check=check, timeout=30)
                                                         purchaseInsert = f"INSERT INTO OwnedRoles (PurchaseDate, Role, User) VALUES ({int(time.time())},{roleObj.id},{user.id})"
-                                                        creditsUpdate = f"UPDATE Credits SET Credits = Credits - 15000 WHERE User = {user.id}"
+                                                        creditsUpdate = f"UPDATE Credits SET Credits = Credits - 5000 WHERE User = {user.id}"
                                                         await DB.execute(creditsUpdate, DBConn)
                                                         await DB.execute(purchaseInsert, DBConn)
                                                         await user.add_roles(roleObj)
@@ -204,11 +216,11 @@ class ShopandRoles(commands.Cog, name="Role Commands"):
                                                     await asyncio.sleep(5)
                                                     await msg.delete()
                                             else:
-                                                await user.send(f"Would you like to buy the `{roleObj.name}` role for `15000 credits`?")
+                                                await user.send(f"Would you like to buy the `{roleObj.name}` role for `5000 credits`?")
                                                 try:
                                                     await self.bot.wait_for('message', check=check, timeout=30)
                                                     purchaseInsert = f"INSERT INTO OwnedRoles (PurchaseDate, Role, User) VALUES ({int(time.time())},{roleObj.id},{user.id})"
-                                                    creditsUpdate = f"UPDATE Credits SET Credits = Credits - 15000 WHERE User = {user.id}"
+                                                    creditsUpdate = f"UPDATE Credits SET Credits = Credits - 5000 WHERE User = {user.id}"
                                                     await DB.execute(creditsUpdate, DBConn)
                                                     await DB.execute(purchaseInsert, DBConn)
                                                     await user.send(f"You have purchased the `{roleObj.name}` role. Please use `!chooserole` in <#555581400414289935> to activate it")
@@ -232,7 +244,7 @@ class ShopandRoles(commands.Cog, name="Role Commands"):
                         creditsSelect = f"SELECT Credits FROM Credits WHERE User ={user.id}"
                         credits = await DB.select_one(creditsSelect, DBConn)
                         if credits is not None:
-                            if credits[0] >= 10000:
+                            if credits[0] >= 3000:
                                 count = 0
                                 for role in shopRoles['Tier2']:
                                     if count == reactions.index(reaction.emoji):
@@ -240,11 +252,11 @@ class ShopandRoles(commands.Cog, name="Role Commands"):
                                         roleSelect = f"SELECT count(*) FROM OwnedRoles WHERE User={user.id} AND Role = {roleObj.id}"
                                         roleResult = await DB.select_one(roleSelect, DBConn)
                                         if roleResult[0] == 0:
-                                            await user.send(f"Would you like to buy the `{roleObj.name}` role for `10000 credits`?")
+                                            await user.send(f"Would you like to buy the `{roleObj.name}` role for `3000 credits`?")
                                             try:
                                                 await self.bot.wait_for('message', check=check, timeout=30)
                                                 purchaseInsert = f"INSERT INTO OwnedRoles (PurchaseDate, Role, User) VALUES ({int(time.time())},{roleObj.id},{user.id})"
-                                                creditsUpdate = f"UPDATE Credits SET Credits = Credits - 10000 WHERE User = {user.id}"
+                                                creditsUpdate = f"UPDATE Credits SET Credits = Credits - 3000 WHERE User = {user.id}"
                                                 await DB.execute(creditsUpdate, DBConn)
                                                 await DB.execute(purchaseInsert, DBConn)
                                                 await user.send(f"You have purchased the `{roleObj.name}` role. Please use `!chooserole` in <#555581400414289935> to activate it")
@@ -265,7 +277,7 @@ class ShopandRoles(commands.Cog, name="Role Commands"):
                         creditsSelect = f"SELECT Credits FROM Credits WHERE User ={user.id}"
                         credits = await DB.select_one(creditsSelect, DBConn)
                         if credits is not None:
-                            if credits[0] >= 5000:
+                            if credits[0] >= 1000:
                                 count = 0
                                 for role in shopRoles['Tier3']:
                                     if count == reactions.index(reaction.emoji):
@@ -273,11 +285,11 @@ class ShopandRoles(commands.Cog, name="Role Commands"):
                                         roleSelect = f"SELECT count(*) FROM OwnedRoles WHERE User={user.id} AND Role = {roleObj.id}"
                                         roleResult = await DB.select_one(roleSelect, DBConn)
                                         if roleResult[0] == 0:
-                                            await user.send(f"Would you like to buy the `{roleObj.name}` role for `5000 credits`?")
+                                            await user.send(f"Would you like to buy the `{roleObj.name}` role for `1000 credits`?")
                                             try:
                                                 await self.bot.wait_for('message', check=check, timeout=30)
                                                 purchaseInsert = f"INSERT INTO OwnedRoles (PurchaseDate, Role, User) VALUES ({int(time.time())},{roleObj.id},{user.id})"
-                                                creditsUpdate = f"UPDATE Credits SET Credits = Credits - 5000 WHERE User = {user.id}"
+                                                creditsUpdate = f"UPDATE Credits SET Credits = Credits - 1000 WHERE User = {user.id}"
                                                 await DB.execute(creditsUpdate, DBConn)
                                                 await DB.execute(purchaseInsert, DBConn)
                                                 await user.send(f"You have purchased the `{roleObj.name}` role. Please use `!chooserole` in <#555581400414289935> to activate it")

@@ -37,12 +37,22 @@ Staff:
   resetstatus:
     brief: "Reset the bot member count status"
     usage: ""
+  checkusertable:
+    brief: "Checks the user table for invalid entries"
+    usage: ""
 
+Giveaway:
+  entergiveaway:
+    brief: "Enter the giveaway"
+    usage: ""
 
 Fun:
   rate:
     brief: "Have me rate something out of 10"
     usage: "<object>"
+  spooky:
+    brief: "IT'S SPOOKY TIME"
+    usage: ""
   magic8ball:
     brief: "Just a magic 8 ball"
     usage: ""
@@ -52,9 +62,9 @@ Fun:
   avatar:
     brief: "Get a user's avatar"
     usage: "<user>\nmention the user"
-  spooky:
-    brief: "Get some cool spooky emojis in your name for Halloween!"
-    usage: ""
+  color:
+    brief: "Visualize and get a color name from color code"
+    usage: "<color code>"
 
 CreditsScore:
   daily:

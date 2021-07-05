@@ -46,9 +46,8 @@ async def init_users_db(ctx):
 async def init_roles_db(ctx):
     guild = bot.get_guild(config['server_ID'])
     for role in guild.roles:
-        roleInsert = f"INSERT INTO Roles (Name, ID, Color, Priority) VALUES ('{role.name}',{role.id},'{role.colour.value}',{role.position})"
-        await DB.execute(roleInsert, DBConn)
-    await ctx.send("Role DB created")
+        roleInsert = f"INSERT IGNORE INTO Roles (Name, ID, Color, Priority) VALUES ('{role.name}',{role.id},'{role.colour.value}',{role.position})"
+        print(roleInsert)
 
 
 @bot.command()
@@ -94,10 +93,5 @@ async def on_ready():
     chanTest = bot.get_channel(config['testing_Channel'])
     await chanTest.send("Initialization is ready")
 
-    # Update Status #
-    guild = bot.get_guild(config['server_ID'])
-    await bot.change_presence(status=discord.Status.online,
-                              activity=discord.Game(
-                                  f"with {guild.member_count} members"))
-
 bot.run(config['token'])
+

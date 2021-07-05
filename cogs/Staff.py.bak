@@ -20,8 +20,6 @@ helpInfo = helpInfo['Staff']
 # Database connections #
 DBConn = None
 
-class SaidNoError(Exception):
-    pass
 
 async def processmutes(bot, DBConnect):
     while bot.is_ready():
@@ -44,7 +42,7 @@ async def processmutes(bot, DBConnect):
                 except AttributeError:
                     chanTest = bot.get_channel(config['testing_Channel'])
                     print(f"Unable to unmute user: {userToUnmute[0]}")
-                    await chanTest.send(f"Unable to unmute user: {userToUnmute[0]}")
+                    await chanTestst.send(f"Unable to unmute user: {userToUnmute[0]}")
 
 async def processtempbans(bot, DBConnect):
     while bot.is_ready():
@@ -106,117 +104,6 @@ class Staff(commands.Cog, name="Staff Commands"):
             channel = ctx.channel
         await channel.send(textToSay)
         await ctx.message.delete()
-    
-    @commands.command()
-    @commands.has_role(config['staff_Role'])
-    async def checkdatabase(self, ctx):
-        global DBConn
-        guild = ctx.guild
-        sendMsg = ""
-        for member in guild.members:
-            selectStatement = f"SELECT count(ID) FROM Users WHERE ID={member.id}"
-            dbcheck = await DB.select_one(selectStatement, DBConn)
-            if dbcheck is not None and dbcheck == 0:
-                if len(sendMsg) + len(f"<@{member.id}>") > 2000:
-                    await ctx.send(sendMsg)
-                    sendMsg = ""
-                    sendMsg += f"<@{member.id}>\n"
-        if len(sendMsg) > 0:
-            await ctx.send(sendMsg)
-        await ctx.send("Done!")
-        def check(m):
-            if m.author == ctx.message.author and m.channel == ctx.message.channel:
-                if m.content.lower() == 'yes':
-                    return True
-                elif m.content.lower() == 'no':
-                    raise SaidNoError
-                else:
-                    return False
-            else:
-                return False
-        try:
-            await ctx.send(f"{ctx.message.author.mention}, Would you like me to fix it? Say Yes or No:")
-            await self.bot.wait_for('message', check=check, timeout=30)
-            for member in guild.members:
-                selectStatement = f"SELECT count(ID) FROM Users WHERE ID={member.id}"
-                dbcheck = await DB.select_one(selectStatement, DBConn)
-                if dbcheck is not None and dbcheck == 0:
-                    try:
-                        guild = self.bot.get_guild(config['server_ID'])
-                        username = f"{member.name}#{member.discriminator}"
-                        username = username.replace("'","")
-                        username = username.replace('"',"")
-                        JoinDate = int(member.joined_at.timestamp())
-                        CreatedDate = int(member.created_at.timestamp())
-                        userInsert = f"INSERT INTO Users (ID, Name, JoinDate, CreatedDate, PrimaryRole) VALUES ({member.id},'{username}',{JoinDate},{CreatedDate},{grandkids.id}) ON DUPLICATE KEY UPDATE JoinDate={JoinDate}"
-                        dailyInsert = f"INSERT INTO Dailies (User) VALUES ({member.id})"
-                        levelInsert = f"INSERT INTO Levels (User) VALUES ({member.id})"
-                        creditInsert = f"INSERT INTO Credits (User) VALUES ({member.id})"
-                        await DB.execute(userInsert, DBConn)
-                        await DB.execute(dailyInsert, DBConn)
-                        await DB.execute(levelInsert, DBConn)
-                        await DB.execute(creditInsert, DBConn)
-                    except Exception as e:
-                        await ctx.send(f"Error adding user {member.mention}: {type(e)} - {e}")
-        except SaidNoError:
-            await ctx.send("Alright. Use `!checkdatabase` again later if you change your mind.")
-        except asyncio.TimeoutError:
-            await ctx.send("Timeout reached. Try again later")
-    
-    @commands.command()
-    @commands.has_role(config['staff_Role'])
-    async def missingkids(self, ctx):
-        await ctx.send("Non-muted Users without Grandkids role: ")
-        guild = ctx.message.channel.guild
-        sendMsg = ""
-        grandkids = guild.get_role(555585197794656256)
-        muted = guild.get_role(565986630750699520)
-        for member in guild.members:
-            if grandkids not in member.roles and muted not in member.roles:
-                if len(sendMsg) + len(f"<@{member.id}>") > 2000:
-                    await ctx.send(sendMsg)
-                    sendMsg = ""
-                sendMsg += f"<@{member.id}>\n"
-        if len(sendMsg) > 0:
-            await ctx.send(sendMsg)
-        await ctx.send("Done!")
-        def check(m):
-            if m.author == ctx.message.author and m.channel == ctx.message.channel:
-                if m.content.lower() == 'yes':
-                    return True
-                elif m.content.lower() == 'no':
-                    raise SaidNoError
-                else:
-                    return False
-            else:
-                return False
-        try:
-            await ctx.send(f"{ctx.message.author.mention}, Would you like me to fix it? Say Yes or No:") 
-            await self.bot.wait_for('message', check=check, timeout=30)
-            for member in guild.members:
-                if grandkids not in member.roles and muted not in member.roles:
-                    try:
-                        await member.add_roles(grandkids)
-                        guild = self.bot.get_guild(config['server_ID'])
-                        username = f"{member.name}#{member.discriminator}"
-                        JoinDate = int(member.joined_at.timestamp())
-                        CreatedDate = int(member.created_at.timestamp())
-                        userInsert = f"INSERT INTO Users (ID, Name, JoinDate, CreatedDate, PrimaryRole) VALUES ({member.id},'{username}',{JoinDate},{CreatedDate},{grandkids.id}) ON DUPLICATE KEY UPDATE JoinDate={JoinDate}"
-                        dailyInsert = f"INSERT INTO Dailies (User) VALUES ({member.id})"
-                        levelInsert = f"INSERT INTO Levels (User) VALUES ({member.id})"
-                        creditInsert = f"INSERT INTO Credits (User) VALUES ({member.id})"
-                        await DB.execute(userInsert, DBConn)
-                        await DB.execute(dailyInsert, DBConn)
-                        await DB.execute(levelInsert, DBConn)
-                        await DB.execute(creditInsert, DBConn)
-                    except Exception as e:
-                        await ctx.send(f"Error adding role to <@{member.id}>")
-                        print(e)
-            await ctx.send("Done!")
-        except SaidNoError:
-            await ctx.send("Alright. Use `!missingkids` again later if you change your mind.")
-        except asyncio.TimeoutError:
-            await ctx.send("Timeout reached. Try again later")
         
     @commands.command(brief=helpInfo['checkusertable']['brief'], usage=helpInfo['checkusertable']['usage'])
     @commands.has_role(config['staff_Role'])
@@ -265,19 +152,11 @@ class Staff(commands.Cog, name="Staff Commands"):
             config['server_ID']).get_role(config['staff_Role'])
         if staffRole not in user.roles:
             if banreason is None:
-                try:
-                    await user.send("You have been banned.\nAppeal at https://www.grandsondiscord.com/appeals/")
-                except Exception as e:
-                    await ctx.send("Unable to DM user before banning.")
-                    print(e)
+                await user.send("You have been banned.")
                 await user.ban(reason=ctx.author.name)
             else:
-                try:
-                    await user.send(f"You have been banned for: {banreason}\nAppeal at https://www.grandsondiscord.com/appeals/")
-                except Exception as e:
-                    await ctx.send("Unable to DM user before banning.")
-                    print(e)
-                await user.ban(reason=f"{ctx.author.name}")
+                await user.send(f"You have been banned for: {banreason}")
+                await user.ban(reason=banreason)
             await ctx.send(f"{user.mention} has been banned!")
         else:
             await ctx.send("You cannot ban another staff member!")
@@ -483,7 +362,7 @@ class Staff(commands.Cog, name="Staff Commands"):
     async def before_processannouncements(self):
         await self.bot.wait_until_ready()
         chanTest = self.bot.get_channel(config['testing_Channel'])
-        await chanTest.send("Announcements Started")
+        await chanTest.send("Announcements")
 
     @commands.Cog.listener()
     async def on_ready(self):

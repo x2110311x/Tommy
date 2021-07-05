@@ -35,14 +35,19 @@ class JoinLeave(commands.Cog):
         dailyInsert = f"INSERT INTO Dailies (User) VALUES ({member.id})"
         levelInsert = f"INSERT INTO Levels (User) VALUES ({member.id})"
         creditInsert = f"INSERT INTO Credits (User) VALUES ({member.id})"
-
+        try:
         # add Role #
-        await member.add_roles(joinRole)
+            await member.add_roles(joinRole)
+        except:
+            pass
         # Insert if new #
-        await DB.execute(userInsert, DBConn)
-        await DB.execute(dailyInsert, DBConn)
-        await DB.execute(levelInsert, DBConn)
-        await DB.execute(creditInsert, DBConn)
+        try:
+            await DB.execute(userInsert, DBConn)
+            await DB.execute(dailyInsert, DBConn)
+            await DB.execute(levelInsert, DBConn)
+            await DB.execute(creditInsert, DBConn)
+        except:
+            pass
 
         # Update Status #
 

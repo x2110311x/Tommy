@@ -102,9 +102,15 @@ class FM(commands.Cog, name="FM Commands"):
                     else:
                         embedFM = discord.Embed(title="Last Played", colour=0x753543, url=f"https://www.last.fm/user/{username}")
                     embedFM.set_author(name=username, icon_url=iconUrl)
-                    embedFM.add_field(name="Song", value=trackName, inline=True)
-                    embedFM.add_field(name="Artist", value=artist, inline=True)
-                    embedFM.add_field(name="Album", value=album, inline=False)
+                    if trackName != '':
+                        embedFM.add_field(name="Song", value=trackName, inline=True)
+                    if artist != '':
+                        embedFM.add_field(name="Artist", value=artist, inline=True)
+                    if album != '':
+                        embedFM.add_field(name="Album", value=album, inline=True)
+                    else: 
+                        album = "undefined"
+                        embedFM.add_field(name="Album", value=album, inline=True)
                     embedFM.set_thumbnail(url=imageURL)
                 await ctx.send(embed=embedFM)
             except ValueError:

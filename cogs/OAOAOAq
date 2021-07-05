@@ -1,0 +1,16 @@
+[0;1;31m●[0m tommy.service - tommy bot service
+   Loaded: loaded (/lib/systemd/system/tommy.service; enabled; vendor preset: enabled)
+   Active: [0;1;31mfailed[0m (Result: exit-code) since Sun 2020-11-01 04:00:25 UTC; 22s ago
+  Process: 3729 ExecStart=/bots/tommy/bot/bashscripts/startbot.sh [0;1;31m(code=exited, status=1/FAILURE)[0m
+ Main PID: 3729 (code=exited, status=1/FAILURE)
+
+Nov 01 04:00:25 alex-vultr startbot.sh[3729]: Traceback (most recent call last):
+Nov 01 04:00:25 alex-vultr startbot.sh[3729]:   File "tommy.py", line 47, in <module>
+Nov 01 04:00:25 alex-vultr startbot.sh[3729]:     bot.load_extension(extension)
+Nov 01 04:00:25 alex-vultr startbot.sh[3729]:   File "/bots/tommy/lib/python3.7/site-packages/discord/ext/commands/bot.py", line 664, in load_extension
+Nov 01 04:00:25 alex-vultr startbot.sh[3729]:     self._load_from_module_spec(spec, name)
+Nov 01 04:00:25 alex-vultr startbot.sh[3729]:   File "/bots/tommy/lib/python3.7/site-packages/discord/ext/commands/bot.py", line 610, in _load_from_module_spec
+Nov 01 04:00:25 alex-vultr startbot.sh[3729]:     raise errors.ExtensionFailed(key, e) from e
+Nov 01 04:00:25 alex-vultr startbot.sh[3729]: discord.ext.commands.errors.ExtensionFailed: Extension 'cogs.Giveaway' raised an error: TabError: inconsistent use of tabs and spaces in indentation (Giveaway.py, line 34)
+Nov 01 04:00:25 alex-vultr systemd[1]: [0;1;39m[0;1;31m[0;1;39mtommy.service: Main process exited, code=exited, status=1/FAILURE[0m
+Nov 01 04:00:25 alex-vultr systemd[1]: [0;1;39m[0;1;31m[0;1;39mtommy.service: Failed with result 'exit-code'.[0m

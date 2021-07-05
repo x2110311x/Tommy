@@ -1,5 +1,4 @@
 import discord
-import io
 import time
 import yaml
 
