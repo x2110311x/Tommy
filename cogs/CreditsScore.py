@@ -189,7 +189,7 @@ class CreditsScore(commands.Cog, name="Credits, Score and Rank Commands"):
     async def alltop(self, ctx, page=1):
         rankEnd = (10 * page)
         rankStart = rankEnd - 10
-        rankSelect = "SELECT User, Points, Level FROM Levels ORDER BY Points Desc"
+        rankSelect = "SELECT User, Points, Level FROM Levels ORDER BY Points Desc WHERE LeftServer=\'F\'"
         rankSelect = await DB.select_all(rankSelect, DBConn)
         users = []
         if rankSelect is not None:
@@ -229,7 +229,7 @@ class CreditsScore(commands.Cog, name="Credits, Score and Rank Commands"):
     async def top(self, ctx, page=1):
         rankEnd = (10 * page)
         rankStart = rankEnd - 10
-        rankSelect = "SELECT User, MonthPoints, MonthLevel FROM Levels ORDER BY MonthPoints Desc"
+        rankSelect = "SELECT User, MonthPoints, MonthLevel FROM Levels ORDER BY MonthPoints Desc WHERE LeftServer=\'F\'"
         rankSelect = await DB.select_all(rankSelect, DBConn)
         users = []
         if rankSelect is not None:

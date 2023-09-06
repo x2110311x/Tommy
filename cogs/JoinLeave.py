@@ -31,10 +31,10 @@ class JoinLeave(commands.Cog):
         JoinDate = int(member.joined_at.timestamp())
         CreatedDate = int(member.created_at.timestamp())
 
-        userInsert = f"INSERT INTO Users (ID, JoinDate, CreatedDate, PrimaryRole) VALUES ({member.id},{JoinDate},{CreatedDate},{joinRole.id}) ON DUPLICATE KEY UPDATE JoinDate={JoinDate}"
-        dailyInsert = f"INSERT INTO Dailies (User) VALUES ({member.id})"
-        levelInsert = f"INSERT INTO Levels (User) VALUES ({member.id})"
-        creditInsert = f"INSERT INTO Credits (User) VALUES ({member.id})"
+        userInsert = f"INSERT INTO Users (ID, JoinDate, CreatedDate, PrimaryRole) VALUES ({member.id},{JoinDate},{CreatedDate},{joinRole.id}) ON DUPLICATE KEY UPDATE LeftServer=\'F\' JoinDate={JoinDate}"
+        dailyInsert = f"INSERT INTO Dailies (User) VALUES ({member.id}) ON DUPLICATE KEY UPDATE User=User"
+        levelInsert = f"INSERT INTO Levels (User) VALUES ({member.id}) ON DUPLICATE KEY UPDATE User=User"
+        creditInsert = f"INSERT INTO Credits (User) VALUES ({member.id}) ON DUPLICATE KEY UPDATE User=User"
         try:
         # add Role #
             await member.add_roles(joinRole)
@@ -76,10 +76,7 @@ class JoinLeave(commands.Cog):
     @commands.Cog.listener()
     async def on_member_remove(self, member):
         # Remove from user table #
-        await DB.execute(f"DELETE FROM Dailies WHERE User={member.id}", DBConn)
-        await DB.execute(f"DELETE FROM Credits WHERE User={member.id}", DBConn)
-        await DB.execute(f"DELETE FROM Levels WHERE User={member.id}", DBConn)
-        await DB.execute(f"DELETE FROM Users WHERE ID={member.id}", DBConn)
+        await DB.execute(f"UPDATE Users WHERE ID={member.id} SET LeftServer=\'T\'", DBConn)
 
         # Update Status #
         guild = self.bot.get_guild(config['server_ID'])
