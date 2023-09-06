@@ -42,7 +42,6 @@ startup_extensions = ["cogs.JoinLeave",
                       "cogs.Fun",
                       "cogs.AuditLogs",
                       "cogs.ShopandRoles",
-                      "cogs.SocialMedia",
                       "cogs.SuggestReport",
                       "cogs.Giveaway"]
 

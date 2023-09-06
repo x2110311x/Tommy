@@ -25,7 +25,7 @@ class SocialMedia(commands.Cog, name="Social Media Feed"):
     def __init__(self, bot):
         self.bot= bot
         self._batch = []
-        self.twitter_check.start()
+        #self.twitter_check.start()
 
     @commands.Cog.listener()
     async def on_message(self, message):
