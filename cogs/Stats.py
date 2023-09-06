@@ -95,7 +95,7 @@ class Stats(commands.Cog):
             userName = f"{member.name}#{member.discriminator}"
             createdTime = member.created_at.timestamp()
             sqlInsert = f"INSERT INTO Joins (User, Time) VALUES ({userID}, {joinTime})"
-            sqlInsert2 = f"INSERT INTO Users (ID,Name,JoinDate,CreatedDate) VALUES ({userID},'{userName}',{joinTime},{createdTime}) ON DUPLICATE KEY UPDATE JoinDate={joinTime}"
+            sqlInsert2 = f"INSERT INTO Users (ID,JoinDate,CreatedDate) VALUES ({userID},{joinTime},{createdTime}) ON DUPLICATE KEY UPDATE JoinDate={joinTime}"
             await execute(sqlInsert2, DBConn)
             await execute(sqlInsert, DBConn)
         except pymysql.err.IntegrityError:
@@ -137,7 +137,7 @@ class Stats(commands.Cog):
             joinTime = member.joined_at.timestamp()
             userName = f"{member.name}#{member.discriminator}"
             createdTime = member.created_at.timestamp()
-            sqlInsert = f"INSERT INTO Users (ID,Name,JoinDate,CreatedDate) VALUES ({userID},'{userName}',{joinTime},{createdTime}) ON DUPLICATE KEY UPDATE JoinDate={joinTime}"
+            sqlInsert = f"INSERT INTO Users (ID,JoinDate,CreatedDate) VALUES ({userID},{joinTime},{createdTime}) ON DUPLICATE KEY UPDATE JoinDate={joinTime}"
             await execute(sqlInsert, DBConn)
         endTime = time.time()
         await msg.edit(content=f"Users Table rebuilt in {endTime - startTime} seconds.")

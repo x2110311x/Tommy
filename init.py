@@ -31,7 +31,7 @@ async def init_users_db(ctx):
             CreatedDate = int(user.created_at.timestamp())
             topRole = user.top_role.id
 
-            userInsert = f"INSERT INTO Users (ID, Name, JoinDate, CreatedDate, PrimaryRole) VALUES ({user.id},'{username}',{JoinDate},{CreatedDate},{topRole})"
+            userInsert = f"INSERT INTO Users (ID, JoinDate, CreatedDate, PrimaryRole) VALUES ({user.id},,{JoinDate},{CreatedDate},{topRole})"
             dailyInsert = f"INSERT INTO Dailies (User) VALUES ({user.id})"
             levelInsert = f"INSERT INTO Levels (User) VALUES ({user.id})"
             creditInsert = f"INSERT INTO Credits (User) VALUES ({user.id})"
