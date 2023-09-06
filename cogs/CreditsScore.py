@@ -189,7 +189,7 @@ class CreditsScore(commands.Cog, name="Credits, Score and Rank Commands"):
     async def alltop(self, ctx, page=1):
         rankEnd = (10 * page)
         rankStart = rankEnd - 10
-        rankSelect = "SELECT User, Points, Level FROM Levels WHERE LeftServer='F' ORDER BY Points Desc"
+        rankSelect = "SELECT Levels.User, Levels.Points, Levels.Level, Users.ID FROM Levels INNER JOIN Users ON Levels.User = Users.ID WHERE Users.LeftServer='F' ORDER BY Points Desc"
         rankSelect = await DB.select_all(rankSelect, DBConn)
         users = []
         if rankSelect is not None:
@@ -229,7 +229,7 @@ class CreditsScore(commands.Cog, name="Credits, Score and Rank Commands"):
     async def top(self, ctx, page=1):
         rankEnd = (10 * page)
         rankStart = rankEnd - 10
-        rankSelect = "SELECT User, MonthPoints, MonthLevel FROM Levels WHERE LeftServer='F' ORDER BY MonthPoints Desc "
+        rankSelect = "SELECT Levels.User, Levels.MonthPoints, Levels.MonthLevel, Users.ID FROM Levels INNER JOIN Users ON Levels.User = Users.ID WHERE LeftServer='F' ORDER BY MonthPoints Desc "
         rankSelect = await DB.select_all(rankSelect, DBConn)
         users = []
         if rankSelect is not None:
