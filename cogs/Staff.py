@@ -123,6 +123,11 @@ class Staff(commands.Cog, name="Staff Commands"):
                     sendMsg += f"<@{member.id}>\n"
         if len(sendMsg) > 0:
             await ctx.send(sendMsg)
+        await ctx.send("Done. Updating old users now.")
+        await DB.execute("Update Users SET LeftServer=\'T\'", DBConn)
+        for member in guild.members:
+            updateStatement = f"UPDATE Users SET LeftServer=\'F\' WHERE ID={member.id}"
+            await DB.execute(updateStatement, DBConn)
         await ctx.send("Done!")
         def check(m):
             if m.author == ctx.message.author and m.channel == ctx.message.channel:
