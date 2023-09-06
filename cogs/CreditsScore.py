@@ -187,6 +187,7 @@ class CreditsScore(commands.Cog, name="Credits, Score and Rank Commands"):
 
     @commands.command(brief=helpInfo['alltop']['brief'], usage=helpInfo['alltop']['usage'])
     async def alltop(self, ctx, page=1):
+        await ctx.send("Generating Image...")
         rankEnd = (10 * page)
         rankStart = rankEnd - 10
         rankSelect = "SELECT Levels.User, Levels.Points, Levels.Level, Users.ID FROM Levels INNER JOIN Users ON Levels.User = Users.ID WHERE Users.LeftServer='F' ORDER BY Points Desc"
@@ -227,6 +228,7 @@ class CreditsScore(commands.Cog, name="Credits, Score and Rank Commands"):
 
     @commands.command(brief=helpInfo['top']['brief'], usage=helpInfo['top']['usage'])
     async def top(self, ctx, page=1):
+        await ctx.send("Generating Image...")
         rankEnd = (10 * page)
         rankStart = rankEnd - 10
         rankSelect = "SELECT Levels.User, Levels.MonthPoints, Levels.MonthLevel, Users.ID FROM Levels INNER JOIN Users ON Levels.User = Users.ID WHERE LeftServer='F' ORDER BY MonthPoints Desc "
