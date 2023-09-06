@@ -9,4 +9,4 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-ENTRYPOINT [ "python3", "tommy.py"]
+ENTRYPOINT [ "python3", "-u", "tommy.py"]
