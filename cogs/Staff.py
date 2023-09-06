@@ -112,61 +112,20 @@ class Staff(commands.Cog, name="Staff Commands"):
     async def checkdatabase(self, ctx):
         global DBConn
         guild = ctx.guild
-        sendMsg = ""
+        await ctx.send("Inserting missing users")
         for member in guild.members:
-            selectStatement = f"SELECT count(ID) FROM Users WHERE ID={member.id}"
-            dbcheck = await DB.select_one(selectStatement, DBConn)
-            if dbcheck is not None and dbcheck == 0:
-                if len(sendMsg) + len(f"<@{member.id}>") > 2000:
-                    await ctx.send(sendMsg)
-                    sendMsg = ""
-                    sendMsg += f"<@{member.id}>\n"
-        if len(sendMsg) > 0:
-            await ctx.send(sendMsg)
+            guild = self.bot.get_guild(config['server_ID'])
+            joinRole = guild.get_role(config['join_Role'])
+            JoinDate = int(member.joined_at.timestamp())
+            CreatedDate = int(member.created_at.timestamp())
+            selectStatement = f"INSERT INTO Users (ID, JoinDate, CreatedDate, PrimaryRole) VALUES ({member.id},{JoinDate},{CreatedDate},{joinRole.id}) ON DUPLICATE KEY UPDATE LeftServer=\'F\', JoinDate={JoinDate}"
+            await DB.execute(selectStatement, DBConn)
         await ctx.send("Done. Updating old users now.")
         await DB.execute("Update Users SET LeftServer=\'T\'", DBConn)
         for member in guild.members:
             updateStatement = f"UPDATE Users SET LeftServer=\'F\' WHERE ID={member.id}"
             await DB.execute(updateStatement, DBConn)
         await ctx.send("Done!")
-        def check(m):
-            if m.author == ctx.message.author and m.channel == ctx.message.channel:
-                if m.content.lower() == 'yes':
-                    return True
-                elif m.content.lower() == 'no':
-                    raise SaidNoError
-                else:
-                    return False
-            else:
-                return False
-        try:
-            await ctx.send(f"{ctx.message.author.mention}, Would you like me to fix it? Say Yes or No:")
-            await self.bot.wait_for('message', check=check, timeout=30)
-            for member in guild.members:
-                selectStatement = f"SELECT count(ID) FROM Users WHERE ID={member.id}"
-                dbcheck = await DB.select_one(selectStatement, DBConn)
-                if dbcheck is not None and dbcheck == 0:
-                    try:
-                        guild = self.bot.get_guild(config['server_ID'])
-                        username = f"{member.name}#{member.discriminator}"
-                        username = username.replace("'","")
-                        username = username.replace('"',"")
-                        JoinDate = int(member.joined_at.timestamp())
-                        CreatedDate = int(member.created_at.timestamp())
-                        userInsert = f"INSERT INTO Users (ID, JoinDate, CreatedDate, PrimaryRole) VALUES ({member.id},{JoinDate},{CreatedDate},{grandkids.id}) ON DUPLICATE KEY UPDATE LeftServer=\'F\', JoinDate={JoinDate}"
-                        dailyInsert = f"INSERT INTO Dailies (User) VALUES ({member.id}) ON DUPLICATE KEY UPDATE User=User"
-                        levelInsert = f"INSERT INTO Levels (User) VALUES ({member.id}) ON DUPLICATE KEY UPDATE User=User"
-                        creditInsert = f"INSERT INTO Credits (User) VALUES ({member.id}) ON DUPLICATE KEY UPDATE User=User"
-                        await DB.execute(userInsert, DBConn)
-                        await DB.execute(dailyInsert, DBConn)
-                        await DB.execute(levelInsert, DBConn)
-                        await DB.execute(creditInsert, DBConn)
-                    except Exception as e:
-                        await ctx.send(f"Error adding user {member.mention}: {type(e)} - {e}")
-        except SaidNoError:
-            await ctx.send("Alright. Use `!checkdatabase` again later if you change your mind.")
-        except asyncio.TimeoutError:
-            await ctx.send("Timeout reached. Try again later")
     
     @commands.command()
     @commands.has_role(config['staff_Role'])
