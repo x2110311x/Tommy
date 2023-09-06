@@ -148,7 +148,7 @@ class Staff(commands.Cog, name="Staff Commands"):
                         username = username.replace('"',"")
                         JoinDate = int(member.joined_at.timestamp())
                         CreatedDate = int(member.created_at.timestamp())
-                        userInsert = f"INSERT INTO Users (ID, JoinDate, CreatedDate, PrimaryRole) VALUES ({member.id},{JoinDate},{CreatedDate},{grandkids.id})ON DUPLICATE KEY UPDATE LeftServer=\'F\' JoinDate={JoinDate}"
+                        userInsert = f"INSERT INTO Users (ID, JoinDate, CreatedDate, PrimaryRole) VALUES ({member.id},{JoinDate},{CreatedDate},{grandkids.id}) ON DUPLICATE KEY UPDATE LeftServer=\'F\', JoinDate={JoinDate}"
                         dailyInsert = f"INSERT INTO Dailies (User) VALUES ({member.id}) ON DUPLICATE KEY UPDATE User=User"
                         levelInsert = f"INSERT INTO Levels (User) VALUES ({member.id}) ON DUPLICATE KEY UPDATE User=User"
                         creditInsert = f"INSERT INTO Credits (User) VALUES ({member.id}) ON DUPLICATE KEY UPDATE User=User"
