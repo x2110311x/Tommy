@@ -95,11 +95,13 @@ class Utilities(commands.Cog, name="Utility Commands"):
         if connectionstatus:
             status = "up"
             msg = "OK"
+            ping = int(self.bot.latency * 1000)
+            statusurl = f"{config['statusurl']}?status={status}&ping={ping}&msg={msg}"
+
         else:
             status = "down"
             msg="Lost\%20\connection\%20to\%20Discord"
-        statusurl = f"{config['statusurl']}?status={status}&ping={ping}&msg={msg}"
-        print(statusurl)
+            statusurl = f"{config['statusurl']}?status={status}&msg={msg}"
         async with aiohttp.ClientSession() as session:
             await session.get(statusurl)
 
