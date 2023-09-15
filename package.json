@@ -1,0 +1,34 @@
+{
+  "name": "Tommy",
+  "version": "1.0.0",
+  "description": "Bot for grandson server",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node .",
+    "deploy": "node deploy",
+    "remove": "node remove"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/x2110311x/tommy.git"
+  },
+  "author": "x2110311x",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/x2110311x/tommy/issues"
+  },
+  "homepage": "https://github.com/x2110311x/tommy#readme",
+  "dependencies": {
+    "@discordjs/builders": "^1.6.5",
+    "@discordjs/rest": "^1.7.1",
+    "canvas": "^2.11.2",
+    "discord-api-types": "^0.37.56",
+    "discord.js": "^14.13.0",
+    "hex-color-to-color-name": "^1.0.2",
+    "mongoose": "^7.5.0"
+  },
+  "devDependencies": {
+    "eslint": "^7.32.0"
+  }
+}
