@@ -119,6 +119,9 @@ class Staff(commands.Cog, name="Staff Commands"):
             JoinDate = int(member.joined_at.timestamp())
             CreatedDate = int(member.created_at.timestamp())
             selectStatement = f"INSERT INTO Users (ID, JoinDate, CreatedDate, PrimaryRole) VALUES ({member.id},{JoinDate},{CreatedDate},{joinRole.id}) ON DUPLICATE KEY UPDATE LeftServer=\'F\', JoinDate={JoinDate}"
+            dailyStatement = f"INSERT INTO Dailies (User) VALUES ({member.id}) ON DUPLICATE KEY UPDATE User={member.id}"
+            levelStatement = f"INSERT INTO Levels (User) VALUES ({member.id}) ON DUPLICATE KEY UPDATE User={member.id}"
+            creditStatement = f"INSERT INTO Credits (User) VALUES ({member.id}) ON DUPLICATE KEY UPDATE User={member.id}"
             await DB.execute(selectStatement, DBConn)
         await ctx.send("Done. Updating old users now.")
         await DB.execute("Update Users SET LeftServer=\'T\'", DBConn)
