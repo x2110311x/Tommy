@@ -63,7 +63,7 @@ class FM(commands.Cog, name="FM Commands"):
                 username = await DB.select_one(fmSelect, DBConn)
             else:
                 username = user
-                iconUrl = "http://x2110311x.me/blankalbum.png"
+                iconUrl = "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/i/e7981d38-6ee3-496d-a6c0-8710745bdbfc/db6zlbs-68b8cd4f-bf6b-4d39-b9a7-7475cade812f.png"
 
         if username is not None:
             try:
@@ -91,7 +91,7 @@ class FM(commands.Cog, name="FM Commands"):
                             albumData = json.loads(albumResponse.text)
                             imageURL = albumData['image'][1]['#text']
                     except KeyError:
-                        imageURL = "http://x2110311x.me/blankalbum.png"
+                        imageURL = "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/i/e7981d38-6ee3-496d-a6c0-8710745bdbfc/db6zlbs-68b8cd4f-bf6b-4d39-b9a7-7475cade812f.png"
                     try:
                         nowPlaying = bool(trackData['@attr']['nowplaying'])
                     except KeyError:
@@ -167,7 +167,7 @@ class FM(commands.Cog, name="FM Commands"):
                             avatarImg.thumbnail((100, 100), Image.ANTIALIAS)
 
                         except (ValueError, KeyError, IndexError):
-                            imageURL = "http://x2110311x.me/albumerror.png"
+                            imageURL = "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/i/e7981d38-6ee3-496d-a6c0-8710745bdbfc/db6zlbs-68b8cd4f-bf6b-4d39-b9a7-7475cade812f.png"
                             albumImgUrl = requests.get(imageURL)
                             avatarImg = Image.open(io.BytesIO(albumImgUrl.content))
                             avatarImg.thumbnail((100, 100), Image.ANTIALIAS)
